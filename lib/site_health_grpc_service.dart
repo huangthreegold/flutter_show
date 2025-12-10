@@ -22,20 +22,33 @@ class SiteHealthGrpcService {
           credentials: ChannelCredentials.insecure(),
         ),
       );
+      
+      // 使用超时验证连接
+      final connection = Future.delayed(const Duration(seconds: 3), () {
+        throw TimeoutException('连接超时');
+      });
+      
+      await Future.any([
+        _channel.getConnection(),
+        connection,
+      ]).timeout(const Duration(seconds: 3), onTimeout: () {
+        throw Exception('无法连接到 gRPC 服务器');
+      });
+      
       _isConnected = true;
-      print('gRPC连接已建立: $host:$port');
+      print('✓ gRPC连接成功: $host:$port');
     } catch (e) {
-      print('gRPC连接失败: $e');
       _isConnected = false;
+      print('✗ gRPC连接失败: $e (将使用本地模拟数据)');
+      rethrow;
     }
   }
 
   // 获取实时告警流
   Stream<Map<String, dynamic>> getRealtimeAlerts() async* {
     if (!_isConnected) {
-      print('gRPC未连接，使用模拟数据');
-      // 模拟实时数据流
-      yield* _getMockAlertStream();
+      print('⚠️  gRPC未连接，实时告警流已停止');
+      // 返回空流，不生成任何数据
       return;
     }
 
@@ -80,7 +93,8 @@ class SiteHealthGrpcService {
   // 获取实时车辆状态
   Stream<List<VehicleStatusData>> getRealtimeVehicleStatus() async* {
     if (!_isConnected) {
-      yield* _getMockVehicleStream();
+      print('⚠️  gRPC未连接，车辆状态流已停止');
+      // 返回空流，不生成任何数据
       return;
     }
 
@@ -99,7 +113,8 @@ class SiteHealthGrpcService {
   // 获取实时指标数据
   Stream<Map<String, int>> getRealtimeMetrics() async* {
     if (!_isConnected) {
-      yield* _getMockMetricsStream();
+      print('⚠️  gRPC未连接，指标数据流已停止');
+      // 返回空流，不生成任何数据
       return;
     }
 
@@ -617,7 +632,9 @@ class SiteHealthGrpcService {
 
     if (category == ExceptionCategory.marker || clearAll) {
       if (nodeId != null) {
-        count += _markerHealthData.removeWhere((m) => m.nodeId == nodeId);
+        final toRemove = _markerHealthData.where((m) => m.nodeId == nodeId).length;
+        _markerHealthData.removeWhere((m) => m.nodeId == nodeId);
+        count += toRemove;
       } else {
         count += _markerHealthData.length;
         _markerHealthData.clear();
@@ -626,7 +643,9 @@ class SiteHealthGrpcService {
 
     if (category == ExceptionCategory.ground || clearAll) {
       if (nodeId != null) {
-        count += _groundHealthData.removeWhere((g) => g.carId == nodeId);
+        final toRemove = _groundHealthData.where((g) => g.carId == nodeId).length;
+        _groundHealthData.removeWhere((g) => g.carId == nodeId);
+        count += toRemove;
       } else {
         count += _groundHealthData.length;
         _groundHealthData.clear();
@@ -635,7 +654,9 @@ class SiteHealthGrpcService {
 
     if (category == ExceptionCategory.goodsSlot || clearAll) {
       if (nodeId != null) {
-        count += _goodsSlotHealthData.removeWhere((g) => g.goodsSlotId == nodeId);
+        final toRemove = _goodsSlotHealthData.where((g) => g.goodsSlotId == nodeId).length;
+        _goodsSlotHealthData.removeWhere((g) => g.goodsSlotId == nodeId);
+        count += toRemove;
       } else {
         count += _goodsSlotHealthData.length;
         _goodsSlotHealthData.clear();
