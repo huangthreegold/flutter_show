@@ -1,0 +1,683 @@
+syntax = "proto3";
+
+package galaxis.map;
+
+
+enum ElementType {
+  ELEMENT_TYPE_UNKNOWN = 0;
+  // A node is a point in map
+  ELEMENT_TYPE_NODE = 1;
+  // An edge is a link between nodes
+  ELEMENT_TYPE_EDGE = 2;
+  // A block is a visual block in the map, with size and orientation
+  ELEMENT_TYPE_BLOCK = 3;
+  ELEMENT_TYPE_CONFLICT_ZONE = 4;
+}
+
+enum EdgeType {
+  EDGE_TYPE_UNKNOWN = 0;
+  EDGE_TYPE_ROUTE = 1;
+  EDGE_TYPE_ROUTE_STATION_TO_STORAGE_SPACE = 2;
+  EDGE_TYPE_CUSTOM_EDGE = 3;
+}
+
+enum MarkerType {
+  MARKER_TYPE_UNKNOWN = 0;
+  // A real marker(real QR code) and each marker associates to a logic point
+  MARKER_TYPE_REAL_MARKER = 1;
+  // Virtual marker is conceptional(do not have a marker in real), each marker associates to a logic point too
+  MARKER_TYPE_VIRTUAL_MARKER = 2;
+  // Also real markers(also QR code) but do not represent a station. Control system will not order the robot to stop at
+  // this kind of marker, but robots can use them to help positioning
+  MARKER_TYPE_NON_STATION_REAL_MARKER = 3;
+  // A kind of virtual marker that reside in SLAM areas, each of them associates to a logic point too
+  MARKER_TYPE_VIRTUAL_MARKER_IN_SLAM_AREA = 4;
+}
+
+enum FeatureType {
+  FEATURE_TYPE_UNKNOWN = 0;
+  FEATURE_TYPE_DEFAULT = 1;
+  // The code on the shelf crossbeam serves as a recognition feature
+  FEATURE_TYPE_FIT_MARKER = 2;
+  // Shelf pillars as recognition features
+  FEATURE_TYPE_COLUMN = 3;
+  //Can detect shelf beams (for loading) or pallets (for picking), and obtain the height of the storage location.
+  FEATURE_TYPE_PALLET_RACK_3D = 4;
+  FEATURE_TYPE_ELEVEN_SHAPE = 5;
+}
+
+message Point {
+  double x = 1;
+  double y = 2;
+  optional double z = 3;
+}
+
+message RouteStationProperties {
+  RcsPrivate rcsPrivate = 1;
+  repeated int32 goodsSlotOrientation = 2;
+  repeated int32 goodsSlotLayerHeight = 3;
+  repeated int64 goodsSlotId = 4;
+}
+
+message StorageSpaceProperties {
+  // Instance IDs of all goods slots that reside in this storage space
+  repeated int64 goodsSlotIds = 1;
+  // Which kinds of containers that goods slots belong to
+  repeated double associatedContainerTypes = 2;
+  // Which groups that goods slots belong to
+  repeated string associatedGoodsSlotGroups = 3;
+}
+
+message ChargerStationProperties {
+  // Distance(Unit: millimeter) from station center to charger's contact clip, each kind of robot can calculate the
+  // docking distance by using this property and the robot's own size
+  int64 distanceToCharger = 1;
+  // Orientation(in radian) of the charger's contact clip in the map
+  int64 chargerOrientation = 2;  // +X is 0， +Y is 1，-X is 2，-Y is 3
+  // Current charging stations are suitable for charging vehicles
+  repeated string passableRobots = 3;
+  optional int32 optionVehicle = 4;
+}
+
+// Dynamic site attributes (attributes included in all landmark codes inside the elevator)
+message DynamicStationProperties {
+  int64 liftNo = 1;
+  repeated int64 dynamicStationIds = 2;
+}
+
+// Elevator waiting position attribute
+message LiftWaitStationProperties {
+  int64 waitLiftId = 1;
+  repeated int64 next_station_id = 2;
+  repeated int64 type = 3;
+  repeated string block_groups = 4;
+}
+
+message NodeSpecificProperties {
+  oneof nodeProperties {
+    RouteStationProperties routeStationProperties = 2;
+    StorageSpaceProperties storageSpaceProperties = 3;
+    ChargerStationProperties chargerStationProperties = 4;
+    DynamicStationProperties dynamicStationProperties = 5;
+    LiftWaitStationProperties liftWaitStationProperties = 6;
+  }
+}
+
+message Node {
+  // All nodes must be of type NODE
+  optional ElementType elementType = 1;
+  int64 id = 2;
+  MarkerType markerType = 4;
+  optional Point location = 5;
+  optional Point logicLocation = 6;
+  repeated int64 zoneId = 7;
+  repeated NodeSpecificProperties properties = 8;
+  repeated YardDistances yardDistances = 9;  // The distance away from the yard while walking
+  optional string markerValue = 10;
+  repeated NodePropertyType nodeTypes = 11;
+  repeated RotateVelocity velocity = 12;
+  repeated string passableRobots = 13;  // obsolete
+  repeated NodeConstraintProperties constraints = 14;
+  optional ForkArmWithLoad forkArmWithLoad = 15;
+  optional string partnerNodeCode = 16;
+  optional bool slamMapOrigin = 17; //The starting point of SLAM mapping
+  optional int64 nodeArea = 18; // AMR designated work area
+}
+
+message ForkArmWithLoad {
+  int64 forkArmWithLoadExpectedHeight = 1;
+  int64 forkArmWithLoadExpectedHeightMax = 2;
+  int64 forkArmWithLoadExpectedHeightMin = 3;
+}
+
+enum ConstraintType {
+  CONSTRAINT_TYPE_UNKNOWN = 0;
+  CONSTRAINT_TYPE_MUST_NOT_TURNING = 1;
+  CONSTRAINT_TYPE_TRY_NOT_TURNING = 2;
+  CONSTRAINT_TYPE_LOAD_NOT_TURNING_BUT_SPECIAL = 5;
+  CONSTRAINT_TYPE_LOAD_MUST_NOT_TURNING = 6;
+  CONSTRAINT_TYPE_UNLOAD_NOT_TURNING_BUT_SPECIAL = 7;
+  CONSTRAINT_TYPE_LOAD_TURNING_WITH_OBSTACLE_CHECK = 8;
+  CONSTRAINT_TYPE_UNLOAD_TURNING_WITH_OBSTACLE_CHECK = 9;
+  CONSTRAINT_TYPE_MUST_NOT_FINE_TUNING = 10;
+  CONSTRAINT_TYPE_LOAD_MUST_NOT_ROTATE_FORK = 11;
+}
+
+enum Quadrant {
+  QUADRANT_UNKNOWN = 0;
+  QUADRANT_FIRST = 1;
+  QUADRANT_SECOND = 2;
+  QUADRANT_THIRD = 3;
+  QUADRANT_FOURTH = 4;
+}
+
+message NodeConstraintProperties {
+  repeated string passableRobots = 1;
+  ConstraintType cstType = 2;
+  repeated Quadrant quadrant = 3;
+}
+
+message RcsPrivate {
+  int64 rackDirection = 1;  // When there is no QR code at the bottom of the rack, it is necessary to specify the
+                            // direction of the FM rack.
+  int64 parkingDirection = 2;
+  int64 roadway = 3;  // Roadway number
+  repeated string transNodeRobots = 4;
+  repeated string cellTypeRestRobots = 5;
+}
+
+message YardDistances {
+  repeated string passableRobots = 1;
+  double offset_x = 2;
+  double offset_y = 3;
+}
+
+enum WalkingType {
+  WALKING_TYPE_UNKNOWN = 0;
+  WALKING_TYPE_PROHIBIT_WALK = 1;
+  WALKING_TYPE_FORWARD_WALK = 2;
+  WALKING_TYPE_BACKWARD_WALK = 3;
+  WALKING_TYPE_FORWARD_AND_BACKWARD_WALK = 4;
+}
+
+message RouteEdgeProperties {
+  repeated string passableRobots = 1;
+  optional StraghtOnVelocity velocity = 2;
+  optional WalkingType endPoint1to2 = 3;
+  optional WalkingType endPoint2to1 = 4;
+  optional bool withLoad = 5;
+}
+
+message EdgeSpecificProperties {
+  EdgeType type = 1;
+  repeated RouteEdgeProperties routeEdgeProperties = 2;
+}
+
+message Edge {
+  // All edges must be of type EDGE
+  ElementType elementType = 1;
+  int64 id = 2;
+  int64 zoneId = 4;
+  // Node ID of one end. The start node if this Edge is a route edge
+  int64 endpoint1Id = 6;
+  // Node ID of the other end. The end node if this Edge is a route edge
+  int64 endpoint2Id = 7;
+  EdgeSpecificProperties properties = 8;
+  double length = 9;
+  // The data required solely by the RCS system
+  string rcsPrivate = 10;
+  bool standardEdge = 11;  // The path drawn is the same length as the actual site
+  repeated NodeConstraintProperties constraints = 12;
+  optional AllowPassage allowPassage = 13;
+  optional string partnerEdgeCode = 14;
+}
+
+message GoodsSlotGroup {
+  string groupId = 1;
+  repeated string goodsSlotLocalIds = 2;
+}
+
+message Rack {
+  uint32 type = 1;
+  // Orientation in the map, in radian
+  repeated double orientation = 2;
+  // Customer defined rack number
+  string displayNumber = 3;
+  // Rack number defined by us. Bottom QR code's number of Kiva-rack, e.g.
+  string number = 4;
+  uint32 beamHeight = 5;
+  uint32 uprightWidth = 6;
+  uint32 topLayerClearance = 7;
+  uint32 distanceToStation = 8;
+  optional string positioningMarker = 9;
+  FeatureType goodsSlotFeatureType = 10;
+  sint32 goodsSlotFeatureHeight = 11;
+  int32 goodsPlacementOffset = 12;
+  bool mobile = 13;
+  repeated uint32 layersHeight = 14;
+  repeated uint32 dockingOffsets = 15;
+  repeated GoodsSlotGroup horizontalGoodsSlotGroups = 16;
+  repeated GoodsSlotGroup verticalGoodsSlotGroups = 17;
+  int64 id = 18;
+  int64 toolingDataId = 19;
+  uint32 boxMarkerOffsetToBottom = 20;
+}
+
+message ToolingData {
+  optional int64 categoryId = 1;
+  optional uint32 uprightWidth = 2;
+  optional uint32 width = 3;
+  optional uint32 length = 4;
+  optional string categoryName = 5;
+  optional uint32 topLayerClearance = 6;
+  optional string name = 7;
+  int64 id = 8;
+  repeated LayersHeight layersHeight = 9;
+  optional string positioningMarker = 10;
+  optional uint32 distanceToStation = 11;
+  bool mobile = 12;
+  optional int64 goodsStackId = 13;
+  bool stacking = 14;
+  bool slideChute = 15;
+  optional sint32 goodsSlotFeatureHeight = 16;
+  optional uint32 boxMarkerOffsetToBottom = 17;
+  optional uint32 goodsSlotTelescopicDistanceToDetectFeature = 18;
+  optional uint32 heightOverGoodsSlotWhenPut = 19;
+  optional uint32 heightOverGoodsSlotWhenGet = 20;
+  optional uint32 heightGapBetweenForkAndGoodsWhenGet = 21;
+  optional uint32 heightGapBetweenForkAndGoodsWhenPut = 22;
+  optional uint32 goodsSlotPillarHeight = 23;
+  optional uint32 goodsSlotStatusCheckHeight = 24;
+  optional uint32 rackLegSideOffset = 25;
+  optional uint32 rackLegFrontOffset = 26;
+  optional uint32 goodsAllocationNum = 27;
+  optional uint32 beamHeight = 28;
+  FeatureType goodsSlotFeatureType = 29;
+  optional GoodsAllocation goodsAlloc = 30;
+  repeated GoodsSlotGroup verticalGoodsSlotGroups = 31;
+  repeated GoodsSlotGroup horizontalGoodsSlotGroups = 32;
+}
+
+message GoodsSlot {
+  int64 id = 1;
+  optional string horizontalGroupId = 3;
+  optional string verticalGroupId = 4;
+  optional string localNumber = 5;
+  optional string displayNumber = 6;
+  repeated double orientation = 7;
+  FeatureType goodsSlotFeatureType = 8;
+  optional int32 beamHeight = 9;
+  int32 layerHeight = 10;
+  optional int32 clearance = 11;
+  optional int32 width = 12;
+  int32 distanceToStation = 13;
+  optional int32 goodsPlacementOffset = 14;
+  repeated Gap gaps = 15;
+  optional int64 goodsStackId = 16;
+  optional int32 goodsSlotFeatureHeight = 17;
+  optional int64 linkId = 18;  // When you modify the global current location, all the locations that are numbered need
+                               // to be adjusted synchronously
+  optional int64 toolId = 19;  // The tooling to which this location belongs
+  optional bool slideChute = 20;
+  optional int32 heightOverGoodsSlotWhenPut = 21;
+  optional int32 heightOverGoodsSlotWhenGet = 22;
+  optional int32 heightGapBetweenForkAndGoodsWhenGet = 23;
+  optional int32 heightGapBetweenForkAndGoodsWhenPut = 24;
+  optional int32 goodsSlotPillarHeight = 25;
+  optional int32 goodsSlotTelescopicDistanceToDetectFeature = 26;
+  optional int32 boxMarkerOffsetToBottom = 27;
+  optional int32 rackOrientation = 28;
+  optional int32 goodsSlotStatusCheckHeight = 29;
+  optional int32 goodsSlotOffset = 30;
+  optional int32 goodsSlotAdjustGoodsModeWhenPut = 31;
+  optional int32 goodsSlotAdjustGoodsModeWhenGet = 32;
+  optional int32 goodsSlotForkGoodsClearance = 33;
+  optional int32 goodsSlotWaitTimeForExternalSlotEmpty = 34;
+  optional int64 rackTypeId = 35;  // 全局工装ID
+  optional int32 length = 36;      // rack length
+  optional int32 goodsAllocationNum = 37;
+  optional int32 goodsAllocationWidth = 38;
+}
+
+enum ConflictZoneType {
+  CONFLICT_ZONE_TYPE_UNKNOWN = 0;
+  CONFLICT_ZONE_TYPE_ALL_OCCUPIED = 1;
+  CONFLICT_ZONE_TYPE_KEY_AREA = 2;
+  CONFLICT_ZONE_TYPE_DEPTH_AREA = 3;
+  CONFLICT_ZONE_TYPE_PIPE_CTRL = 4;
+  CONFLICT_ZONE_TYPE_TASK_LIMIT = 5;
+  CONFLICT_ZONE_TYPE_TARGET_CTRL = 6;
+}
+
+message ConflictZone {
+  int64 id = 1;
+  ElementType elementType = 2;
+  repeated Point pointList = 3;
+  repeated int32 includeDataId = 4;
+  ConflictZoneType conflictZoneType = 5;
+  int32 limitedAgvNum = 6;
+  repeated string allowAGVType = 7;
+  int32 clusterNodeCount = 8;
+  int32 limitTaskPriority = 9;
+  int32 limitTaskNum = 10;
+  repeated string enterNode = 11;
+  repeated string exitNode = 12;
+  int64 depthX = 13;
+  int64 depthY = 14;
+}
+
+message BusinessMap {
+  string floorName = 1;
+  int64 id = 2;
+  int32 floorNum = 3;
+  repeated Node node = 4;
+  repeated Edge edge = 5;
+  repeated GoodsSlot goodsSlot = 6;
+  repeated ConflictZone conflictZone = 7;
+  repeated Rack rack = 8;
+  GlobalDefaultData globalDefaultData = 9;
+  repeated PropertyObject propertyObjects = 10;
+  repeated Rule rules = 11;
+  repeated FunctionalBlock functionalBlock = 12;
+  repeated ServerAddress serverAddress = 13;
+  repeated GoodsStackData goodsStackData = 14;
+}
+
+message MappingData {
+  repeated BusinessMap businessMap = 1;
+  PrivateData privateData = 2;
+  optional int64 internalVersion = 3;
+}
+
+message ServerAddress {
+  int32 zoneId = 1;
+  string rcsServerAddr = 2;   // RCS service scheduling address
+  int32 rcsServerPort = 3;    // RCS service scheduling port
+  string timeServerAddr = 4;  // The address of the time synchronization
+  string neoServerAddr = 5;   // neo4j service scheduling address
+  int32 neoServerPort = 6;    // neo4j service scheduling port
+}
+
+message GlobalDefaultData {
+  repeated string passableRobots = 1;
+  repeated StraghtOnVelocity straightOnVelocity = 2;
+  repeated RotateVelocity rotateVelocity = 3;
+  int64 markerType = 4;
+  string rackType = 5;
+  string language = 6;
+  bool taskOrbitMustAlongAxis = 7;
+  bool rcsEqualDistanceShow = 8;
+  bool logicIsContinuous = 9;
+  AllowPassage allowPassage = 10;
+  optional string partnerMapVersion = 11;
+  optional string partnerMapCode = 12;
+}
+
+message AllowPassage {
+  int64 long = 1;
+  int64 width = 2;
+  int64 height = 3;
+}
+
+message VelocityItem {
+  double velocity = 1;               // unit: meter/second
+  optional double acceleration = 2;  // unit: meter/second²
+}
+
+message StraghtOnVelocity {
+  repeated string passableRobots = 1;
+  optional VelocityItem forward = 2;  // unit: speed[meter/second], acceleration[meter/second²]
+  optional VelocityItem backward = 3;
+  optional VelocityItem forwardWithLoad = 4;
+  optional VelocityItem backwardWithLoad = 5;
+}
+
+message RotateVelocity {
+  repeated string passableRobots = 1;
+  optional VelocityItem rotate = 2;  // unit: speed[radian/second], acceleration[radian/second²]
+  optional VelocityItem rotateWithLoad = 3;
+}
+
+enum NodePropertyType {
+  NODE_PROPERTY_TYPE_UNKNOWN = 0;
+  NODE_PROPERTY_TYPE_CELL_TYPE_GENERAL_STATION = 1;
+  NODE_PROPERTY_TYPE_CELL_TYPE_CHARGE_STATION = 4;
+  NODE_PROPERTY_TYPE_CELL_TYPE_TURN = 5;
+  NODE_PROPERTY_TYPE_CELL_TYPE_RACK_LOCATION = 6;
+  NODE_PROPERTY_TYPE_CELL_TYPE_PICK_STATION = 9;
+  NODE_PROPERTY_TYPE_CELL_TYPE_PACKAGE_STATION = 10;
+  NODE_PROPERTY_TYPE_CELL_TASK_ENABLE_RACK = 11;
+  NODE_PROPERTY_TYPE_CELL_TYPE_REPLENISH_STATION = 12;
+  NODE_PROPERTY_TYPE_CELL_TYPE_FRAME_ENTITY = 13;
+  NODE_PROPERTY_TYPE_CELL_TYPE_PRODUCTION_LINE = 14;
+  NODE_PROPERTY_TYPE_CELL_TYPE_GET_PRODUCT = 18;
+  NODE_PROPERTY_TYPE_ALLOW_VEHICLE = 19;
+  NODE_PROPERTY_TYPE_ALLOW_PALLET = 20;
+  NODE_PROPERTY_TYPE_ALLOW_ONLY_EMPTY = 21;
+  NODE_PROPERTY_TYPE_CELL_TYPE_LIFT = 22;
+  NODE_PROPERTY_TYPE_CELL_TYPE_SPIN_STATION = 24;
+  NODE_PROPERTY_TYPE_CELL_TYPE_LIFT_WAIT = 27;
+  NODE_PROPERTY_TYPE_CELL_TYPE_PALLET = 28;
+  NODE_PROPERTY_TYPE_CELL_TYPE_REST = 29;
+  NODE_PROPERTY_TYPE_CELL_TYPE_CY_BOARD = 30;
+  NODE_PROPERTY_TYPE_DYNAMIC_STATIONS = 32;
+  NODE_PROPERTY_TYPE_TRANS_NODE = 33;
+  NODE_PROPERTY_TYPE_CELL_TYPE_STACKED_STATION = 34;
+  NODE_PROPERTY_TYPE_FORK_ARM_WITH_LOAD_STATION = 35;
+  NODE_PROPERTY_TYPE_DISABLED_STATION = 36;
+  NODE_PROPERTY_TYPE_CELL_TYPE_MULTI_RACK_STATION = 37;
+}
+
+message PrivateData {
+  map<int32, MapItem> inPathSiteIndex = 1;
+  map<int32, MapItem> inSitePathIndex = 2;
+  map<int64, EntityInfo> entityInfos = 3;
+  repeated ToolingData toolingData = 4;
+}
+
+message MapItem {
+  repeated int32 value = 1;
+}
+
+message EntityInfo {
+  repeated string direction = 1;
+  int64 additionalWeightBehind = 2;
+  int64 additionalWeight = 3;
+  double distanceWithoutNavigation = 4;
+  BiasAttr biasAttr = 5;
+  optional double phyX = 6;
+  optional double phyY = 7;
+}
+
+message BiasAttr {
+  int64 pathStartHeading = 1;
+  int64 pathEndHeading = 2;
+  int64 centerX = 3;
+  int64 centerY = 4;
+  string Rotation = 5;
+  int64 Radius = 6;
+}
+
+message GoodsAllocation {
+  bool isSelected = 1;
+  repeated Gap gaps = 2;
+  int32 goodsPlacementOffset = 3;
+  int64 goodsStackId = 4;
+  int64 id = 5;
+  string localNumber = 6;
+  FeatureType goodsSlotFeatureType = 7;
+  int32 distanceToStation = 8;
+  int32 goodsSlotFeatureHeight = 9;
+  int32 boxMarkerOffsetToBottom = 10;
+  string verticalGroupId = 11;
+  string horizontalGroupId = 12;
+  string displayNumber = 13;
+  int32 beamHeight = 14;
+  int32 layerHeight = 15;
+  int32 clearance = 16;
+  int32 width = 17;
+  repeated int32 orientation = 18;
+  int32 goodsAllocationWidth = 19;
+}
+
+message Gap {
+  double value = 1;
+}
+
+message LayersHeight {
+  int64 id = 1;
+  int32 layerHeight = 2;
+  int32 clearance = 3;
+  LayerGoodsAllocationGroup layerGoodsAllocationGroup = 4;
+}
+
+message LayerGoodsAllocationGroup {
+  int32 goodsAllocationNum = 1;
+  repeated GoodsSlot goodsSlots = 2;
+}
+
+enum PropertyValueType {
+  PROPERTY_VALUE_TYPE_UNKNOWN = 0;
+  PROPERTY_VALUE_TYPE_NUMBER = 1;
+  PROPERTY_VALUE_TYPE_STRING = 2;
+  PROPERTY_VALUE_TYPE_BOOLE = 3;
+  PROPERTY_VALUE_TYPE_SET = 4;
+}
+
+message PropertyObject {
+  int64 id = 1;
+  string propertyName = 2;
+  // The value type of this property
+  PropertyValueType valueType = 3;
+  // Description of this property
+  string desc = 4;
+}
+
+message Rule {
+  string name = 1;
+  // Some condition groups of normative rules
+  Condition condition = 2;
+  // Behavior generated by rules
+  repeated ConductGroup conducts = 3;
+}
+
+message Condition {
+  int64 id = 1;
+  oneof condition {
+    // When under a single condition
+    MetaMessage metaCond = 2;
+    // When there are multiple conditions
+    ComplexCondition complexCond = 3;
+  }
+}
+
+message ComplexCondition {
+  // Container for storing multiple conditions
+  repeated Condition conditions = 1;
+  // A container for storing logical relationships between multiple conditions
+  repeated Relationship relationships = 2;
+}
+
+message MetaMessage {
+  int64 id = 1;
+  // Selected attributes as rule conditions
+  int64 propertyId = 2;
+  ConditionType conditionType = 3;
+  oneof value {
+    // When inputting a numerical value
+    double numValue = 4;
+    // When entering a string
+    string strValue = 5;
+    // When the input is a range value
+    RangeValue rangeValue = 6;
+    // When entering a bool
+    bool boolValue = 7;
+    // When the result is set
+    string setValues = 8;
+  };
+  // When the result generates a branch, it needs to be effective for the vehicle model
+  string applicationsCar = 9;
+  // The corresponding attribute unit when the type is a numerical value
+  string unit = 10;
+}
+
+message RangeValue {
+  // Starting value within a specific range
+  double startValue = 1;
+  // End value within a specific range
+  double endValue = 2;
+  // Does it include start and end values
+  bool include = 3;
+}
+
+message Relationship {
+  // id1 is  id of MainCondition  or id of SharedValue
+  int64 id1 = 1;
+  Logic logic = 2;
+  ////id2 is id of MainCondition  or id of SharedValue
+  int64 id2 = 3;
+}
+
+message ConductGroup {
+  int64 id = 1;
+  // Selected attributes as rule conditions
+  int64 propertyId = 2;
+  oneof result {
+    // When the result value is only a single one
+    MetaMessage metaResult = 3;
+    // When multiple result values appear
+    ComplexResult multipleResult = 4;
+  }
+}
+
+message ComplexResult {
+  // use SharedValue
+  repeated MetaMessage metaResult = 1;
+}
+
+enum ConditionType {
+  CONDITION_TYPE_UNKNOWN = 0;
+  CONDITION_TYPE_ALLOW = 1;
+  CONDITION_TYPE_NOT_ALLOW = 2;
+  CONDITION_TYPE_EQUAL_TO = 3;
+  CONDITION_TYPE_NOT_EQUAL_TO = 4;
+  CONDITION_TYPE_GREATER_THAN = 5;
+  CONDITION_TYPE_LESS_THAN = 6;
+  CONDITION_TYPE_GREATER_THAN_OR_EQUAL = 7;
+  CONDITION_TYPE_LESS_THAN_OR_EQUAL = 8;
+  CONDITION_TYPE_RANGE = 9;
+  CONDITION_TYPE_CONTAIN = 10;
+  CONDITION_TYPE_NOT_CONTAIN = 11;
+}
+
+enum Logic {
+  LOGIC_UNKNOWN = 0;
+  LOGIC_OR = 1;
+  LOGIC_AND = 2;
+}
+
+message FunctionalBlock {
+  int64 id = 1;
+  BlockType blockType = 2;
+  AppliedLoadStatus appliedLoadStatus = 3;
+  repeated string appliedProducts = 4;
+  repeated string appliedSensors = 5;
+  string shape = 6;  // Customize the coordinates of each vertex of a shape
+  bool enabled = 7;  // Is it enabled
+  optional bool result_reverse = 8;
+  optional string blockName = 9;
+}
+
+enum BlockType {
+  BLOCK_TYPE_UNKNOWN = 0;
+  BLOCK_TYPE_EXTEND = 1;  // Expand obstacle avoidance area
+  BLOCK_TYPE_SHIELD = 2;  // Shield obstacle avoidance areas
+  BLOCK_TYPE_PASS_COND = 3; // Passable condition area
+}
+
+enum AppliedLoadStatus {
+  APPLIED_LOAD_STATUS_UNKNOWN = 0;
+  APPLIED_LOAD_STATUS_ANY_STATE = 1;
+  APPLIED_LOAD_STATUS_EMPTY_LOAD = 2;
+  APPLIED_LOAD_STATUS_LOAD = 3;
+}
+
+message GoodsStackData {
+  optional int32 category = 1;
+  optional string categoryName = 2;
+  optional string goodsStackName = 3;
+  int64 goodsStackId = 4;
+  optional int32 goodsStackLength = 5;
+  optional int32 goodsStackWidth = 6;
+  optional int32 goodsStackHeight = 7;
+  optional int32 goodsStackLegWidth = 8;
+  optional int32 goodsStackFeatureHeight = 9;   // High detection type
+  optional string goodsStackFeatureType = 10;   // Detection type
+  optional int32 goodsStackInnerHeight = 11;    // Fork height
+  optional int32 boxMarkerOffsetToBottom = 12;  // distance from QR code to bottom of box
+  optional int32 goodsStackBottomCrossbeamHeight = 13;
+  optional string goodsStackType = 14;
+  optional bool hasBottomMark = 15;
+  optional string goodsStackContourFileName = 16;
+  optional int32 goodsStackTelescopicDistanceToDetectFeature = 17;
+}

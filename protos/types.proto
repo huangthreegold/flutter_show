@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package galaxis.site.health;
+
+// The codehealth service definition.
+message NodeDeviationData {
+  int64 diff_x = 1;
+  int64 diff_y = 2;
+  double rotate = 3;
+}
+
+message MapNodeHealthInfo {
+  int64 node_id = 1;
+  string marker_code = 2;
+  double decode_success_rate = 3;
+  optional NodeDeviationData deviation = 4;
+}
+
+message PositionData_t {
+  int64 local_x = 1;
+  int64 local_y = 2;
+}
+
+message PositionData_f {
+  double local_x = 1;
+  double local_y = 2;
+}
+
+message CurrentMarkData {
+  int64 car_id = 1;
+  int64 node_id = 2;
+  string marker_code = 3;
+  optional PositionData_t currentlogiclocation = 4;
+  optional PositionData_t currentstandardlocation = 5;
+  optional PositionData_f currentcomputedlocation = 6;
+  double current_degree = 7;
+}
+
+message CodeHealthInfo{
+  int64 car_id = 1;
+  int64 node_id = 2;
+  string marker_code = 3;
+  double decode_success_rate = 4;
+  int64 diff_x = 5;
+  int64 diff_y = 6;
+  double angle = 7;
+}
+

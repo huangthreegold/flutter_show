@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package galaxis.site.health;
+
+import "types.proto";
+import "health_map_service.proto";
+import "google/protobuf/empty.proto";
+
+
+service ReportHealthService {
+  rpc ReportCodeHealthInfo(CodeHealthInfo) returns (google.protobuf.Empty);
+  rpc ReportGoodsSlotInfo(GoodsSlotHealthInfo) returns (google.protobuf.Empty);
+  rpc ReportGroundHealthInfo(GoodsSlotHealthInfo) returns (google.protobuf.Empty);
+  rpc ReportCurrentMarkData(CurrentMarkData) returns(google.protobuf.Empty);
+}
+
+
+service RequestCarHealthData {
+  rpc RequestGroundHealthInfo(google.protobuf.Empty) returns (GroundHealthInfo);
+  rpc RequestCodeHealthInfo(google.protobuf.Empty) returns(CodeHealthInfo);
+  rpc RequestGoodsSlotInfo(google.protobuf.Empty) returns(GoodsSlotHealthInfo);
+}

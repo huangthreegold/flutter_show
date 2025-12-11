@@ -1,0 +1,558 @@
+syntax = "proto3";
+
+package galaxis.data.provider;
+
+//import "opentelemetry/proto/trace/v1/trace.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+
+
+message Int32Values {
+    repeated int32 values = 1;
+}
+message StringValues {
+    repeated string values = 1;
+}
+message OptionBoolValue {
+    optional bool value = 1;
+}
+message OptionDoubleValue {
+    optional double value = 1;
+}
+message IntStringMap {
+    map<int32, string> items = 1;
+}
+
+message UserLanguageType {
+    string locale = 1;
+}
+message UserSession {
+    int64 session_id = 1;
+}
+message UserLanguageSession {
+    int64 session_id = 1;
+    string locale = 2;
+}
+message Time {
+    int64 timestamp_micros = 1;
+}
+message ReplayInfo {
+    int64 session_id = 1;
+    int64 timestamp_micros = 2;
+    double speed = 3;
+    int32 framerate = 4;
+}
+message Times {
+    repeated Time items = 1;
+}
+message SteadyTimeRange {
+    int64 steady_millis_begin = 1;
+    int64 steady_millis_end = 2;
+}
+message TimeRange {
+    int64 timestamp_micros_begin = 1;
+    int64 timestamp_micros_end = 2;
+}
+message TimeView {
+    TimeRange global_time_range = 1;
+    oneof time_view_item {
+        TimeRange view_time_range = 2;
+        int64 view_time_point = 3;
+        bool is_realtime = 4;
+    }
+}
+message TimeViews {
+    repeated TimeView time_views = 1;
+}
+message OptionTime {
+    optional int64 timestamp_micros = 1;
+}
+message ResampleTimeRange {
+    int64 timestamp_micros_begin = 1;
+    int64 timestamp_micros_end = 2;
+    int64 micros_per_item = 3;
+}
+message CountedRange {
+    enum TimestampType {
+        START = 0;
+        MIDDLE = 1;
+        END = 2;
+    }
+
+    string locale = 1;
+    int64 timestamp_micros = 2;
+    TimestampType timestamp_type = 3;
+    int64 count = 4;
+}
+message AgvLogCountedRange {
+    enum LevelType {
+        DETAIL = 0;
+        EXCEPTION = 1;
+    }
+
+    string locale = 1;
+    int64 timestamp_micros = 2;
+    CountedRange.TimestampType timestamp_type = 3;
+    int64 count = 4;
+    oneof filter_type {
+        LevelType level_type = 5;
+        Int32Values select_item_types = 6;
+    }
+}
+message RosbagTimeRange {
+    int64 timestamp_micros_begin = 1;
+    int64 timestamp_micros_end = 2;
+    RosbagTypeItem.RosbagType rosbag_type = 3;
+    repeated int32 topic_ids = 4;
+    string file_name = 5;
+}
+message ExtTimeRange {
+    int64 timestamp_micros_begin = 1;
+    int64 timestamp_micros_end = 2;
+    repeated string ext_items = 3;
+}
+
+message RosbagTypeItem {
+    enum RosbagType {
+        ROSBAG2 = 0;
+        MCAP = 1;
+    }
+    RosbagType rosbag_type = 1;
+    string file_name = 2;
+}
+message ProcessStatus {
+    int32 percent = 1;
+}
+message FileInfo {
+    string path = 1;
+    int64 size = 2;
+}
+
+
+
+message Point {
+    double x = 1;
+    double y = 2;
+}
+
+message CurveItem {
+    string name = 1;
+    string description = 2;
+}
+message CurveItems {
+    map<int32, CurveItem> items = 1;
+}
+
+message RadarItem {
+    string name = 1;
+    string description = 2;
+    string component_name = 3;
+}
+message RadarItems {
+    map<int32, RadarItem> items = 1;
+}
+
+message AgvLog {
+    int64 timestamp_micros = 1;
+    int32 group_type = 2;
+    int32 item_type = 3;
+    optional int32 logic_x = 4;
+    optional int32 logic_y = 5;
+    optional int32 err_code = 6;
+    string content = 7;
+    string raw_json = 8;
+}
+message AgvLogs {
+    repeated AgvLog items = 1;
+}
+
+message AgvStateLog {
+    enum StateType {
+        READY = 0;
+        INFO = 1;
+        WARNING = 2;
+        CRITICAL = 3;
+        FATAL = 4;
+        CHARGE = 5;
+    }
+
+    int64 timestamp_micros = 1;
+    StateType item_type = 2;
+    string content_data = 3;
+    string args_data = 4;
+    string tooltip_data = 5;
+}
+message AgvStateLogs {
+    repeated AgvStateLog items = 1;
+}
+
+message BatteryStatus {
+    message CellVoltage {
+        int32 id = 1;
+        double voltage = 2;
+    }
+    message ThermometerValue {
+        int32 id = 1;
+        double temperature = 2;
+    }
+    message OnOffValue {
+        int32 id = 1;
+        bool value = 2;
+    }
+    message CellBalanceStatus {
+        int32 id = 1;
+        bool is_balanced = 2;
+    }
+    int64 timestamp_micros = 1;
+    int32 soc = 2;
+    double voltage = 3;
+    double charge_current = 4;
+    double discharge_current = 5;
+    double remaining_capacity = 6;
+    double full_charge_capacity = 7;
+    double designed_capacity = 8;
+    int32 charge_cycles = 9;
+    repeated CellVoltage cells_voltage = 10;
+    repeated ThermometerValue thermometers = 11;
+    repeated int32 exceptions = 12;
+    repeated OnOffValue on_off_status = 13;
+    repeated CellBalanceStatus cells_balance_status = 14;
+}
+message BatteryStatuses {
+    repeated BatteryStatus items = 1;
+}
+
+message ExceptionStatusEvent {
+    enum Level {
+        UNDETERMINED = 0;
+        INFORMATIONAL = 12;
+        WARNING = 13;
+        CRITICAL = 14;
+        FATAL = 15;
+    }
+
+    enum EventId {
+        NONE = 0;
+        START = 1;
+        UPDATE = 2;
+        END = 3;
+        START_AND_END = 4;
+    }
+
+    int64 timestamp_micros = 1;
+    Level level = 2;
+    EventId event_id = 3;
+    int32 exception_type = 4;
+    string description = 5;
+}
+message ExceptionStatusEvents {
+    repeated ExceptionStatusEvent items = 1;
+}
+
+// message ObstacleDataItem {
+//     int32 radar_id = 1;
+//     repeated int16 polygon = 3;
+// }
+// message RadarData {
+//     int64 timestamp_micros = 1;
+//     repeated int32 radar_ids = 2;
+//     repeated int16 points = 3;
+//     bytes obstacle_data = 4;
+//     double fork_frame_pos = 5;
+// }
+message RadarData {
+    int64 timestamp_micros = 1;
+    int32 radar_id = 2;
+    bytes scan_data = 3;
+    bytes obstacle_data = 4;
+}
+message RadarDatas {
+    repeated RadarData items = 1;
+}
+message ComponentInfos {
+    bytes component_datas = 1;
+}
+message MotionItem {
+    int64 motion_start_timestamp_micros = 1;
+    int64 motion_end_timestamp_micros = 2;
+    int32 motion_type = 3;
+    string raw_json = 4;
+}
+message MotionItems {
+    repeated MotionItem items = 1;
+}
+message RadarPageDatas {
+    int64 timestamp_micros = 1;
+    RadarDataSketchys sketchy_items = 2;
+    repeated RadarData radar_datas = 3;
+    bytes component_datas = 4;
+    repeated bytes distance_sensor_datas = 5;
+    MotionItems motion_items = 6;
+}
+message RadarDataSketchy {
+    int64 timestamp_micros = 1;
+    int32 radar_id = 2;
+    int64 steady_clock_ms = 3;
+    repeated DistriDataType valid_types = 4;
+}
+message RadarDataSketchys {
+    repeated RadarDataSketchy items = 1;
+}
+message FetchRadarDataRequest {
+    RadarDataSketchy radar_sketchy = 1;
+    DistriDataType data_type = 2;
+}
+message RadarRunningInfo {
+    enum RangeType {
+        RUN = 0;
+        RUN_WITH_OBST = 1;
+    }
+    int32 radar_id = 1;
+    int64 begin_timestamp_micros = 2;
+    int64 end_timestamp_micros = 3;
+    RangeType range_type = 4;
+}
+message RadarRunningInfos {
+    repeated RadarRunningInfo items = 1;
+    int64 begin_timestamp_micros = 2;
+    int64 end_timestamp_micros = 3;
+}
+
+message RobotStatus {
+    int64 timestamp_micros = 1;
+    double cpu = 2;
+    double mem = 3;
+    Point location = 4;
+    Point logic_location = 5;
+    double so_speed = 6;
+    double turn_speed = 7;
+    optional double jack_position = 8;
+    repeated double telescoping_position = 9;
+    repeated double support_position = 10;
+    int32 battery = 11;
+}
+
+message SensorSwitchItem {
+    int32 sw_id = 1;
+    repeated int64 timestamp_micross = 2;
+    repeated int32 values = 3;
+}
+message SensorSwitchItems {
+    repeated SensorSwitchItem items = 1;
+    int64 current_timestamp_micros = 2;
+}
+
+message CurveItemData {
+    int32 id = 1;
+    repeated int64 timestamp_micross = 2;
+    repeated double values = 3;
+}
+message CurveItemDatas {
+    map<int32, CurveItemData> items = 1;
+}
+
+
+
+
+
+
+
+message TimeaxisValueItem {
+    int64 timestamp_micros = 1;
+    int64 duration_micros = 2;
+    int32 level = 3;
+}
+
+message TimeaxisValueItems {
+    repeated TimeaxisValueItem items = 1;
+}
+
+message TimeaxisAbnormalItem {
+    int64 timestamp_micros = 1;
+    int64 duration_micros = 2;
+}
+
+message TimeaxisItems {
+    map<int32, TimeaxisValueItems> items = 1;
+    repeated TimeaxisAbnormalItem abnormal_items = 2;
+}
+
+message MatchingConditions {
+    Int32Values err_codes = 1;
+    Int32Values motion_ids = 2;
+    Int32Values bncmd_ids = 3;
+    Int32Values bnreport_ids = 4;
+}
+
+message MatchingCountedConditions {
+    map<int32, int32> err_codes = 1;
+    map<int32, int32> motion_ids = 2;
+    map<int32, int32> bncmd_ids = 3;
+    map<int32, int32> bnreport_ids = 4;
+}
+
+message MatchingRequest {
+    string locale = 1;
+    int64 timestamp_micros = 2;
+    MatchingConditions conditions = 3;
+    int64 max_count = 5;
+    int64 advise_finish_timestamp_micros = 6;
+    bool direct_new = 7;
+}
+
+message MatchingResponse {
+    AgvLogs logs = 1;
+    TimeRange timerange = 2;
+    bool complete = 3;
+}
+
+message FetchDataResponse {
+    string filename = 1;
+    bytes content = 2;
+}
+
+//
+
+enum DistriDeviceType {
+    DepthCamera = 0;
+    Mid360 = 1;
+    Lidar2d = 2;
+}
+
+enum DistriDataType {
+    Point2d = 0;
+    Point3d = 1;
+    Rgb24 = 2;
+    Depth16 = 3;
+    Infra8 = 4;
+}
+
+enum DistriUsedBy {
+    Walk = 0;
+    Pick = 1;
+}
+
+message DistriDeviceItem {
+    int32 device_id = 1;
+    DistriDeviceType device_type = 2;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+service RobotModelProvider {
+    rpc GetServerVersion(google.protobuf.Empty) returns (google.protobuf.StringValue) {}
+    //
+    rpc GetComponentInfos(google.protobuf.Empty) returns (ComponentInfos) {}
+    rpc GetRos2Topics(google.protobuf.Empty) returns (IntStringMap) {}
+    //
+    rpc GetAllInputSwitchCurveItems(UserLanguageType) returns (CurveItems) {}
+    rpc GetAllBatteryCurveItems(UserLanguageType) returns (CurveItems) {}
+    rpc GetAllLoadRatioCurveItems(UserLanguageType) returns (CurveItems) {}
+    rpc GetAllMotionCurveItems(UserLanguageType) returns (CurveItems) {}
+    rpc GetAllDistanceSensorItems(UserLanguageType) returns (CurveItems) {}
+    rpc GetAllRadarDataItems(UserLanguageType) returns (RadarItems) {}
+    //
+    rpc GetAllExceptionItems(UserLanguageType) returns (CurveItems) {}
+    rpc GetAllMotionItems(UserLanguageType) returns (CurveItems) {}
+    rpc GetAllBncmdItems(UserLanguageType) returns (CurveItems) {}
+    rpc GetAllBnreportItems(UserLanguageType) returns (CurveItems) {}
+}
+
+service HistoryDataProvider {
+    rpc QueryAgvLogFirst(google.protobuf.Empty) returns (Time) {}
+    rpc QueryAgvLogs(AgvLogCountedRange) returns (AgvLogs) {}
+    //
+    rpc QueryAgvStateLogFirst(google.protobuf.Empty) returns (Time) {}
+    rpc QueryAgvStateLogs(CountedRange) returns (AgvStateLogs) {}
+    //
+    rpc QueryBatteryStatusFirst(google.protobuf.Empty) returns (Time) {}
+    rpc QueryBatteryStatuses(ResampleTimeRange) returns (BatteryStatuses) {}
+    //
+    rpc QueryExceptionStatusEvents(TimeRange) returns (ExceptionStatusEvents) {}
+    //
+    rpc QueryRadarDataFirst(google.protobuf.Empty) returns (Time) {}
+    rpc QueryRadarPageDatas(Time) returns (RadarPageDatas) {}
+    /////////////
+    rpc QueryRadarObstacleTrend(TimeRange) returns (RadarRunningInfos) {}
+    rpc QueryRadarDatas(TimeRange) returns (RadarDatas) {}
+    rpc QueryRadarDataSketchys(CountedRange) returns (RadarDataSketchys) {}
+    rpc CreateRadarDataDumpFile(TimeRange) returns (stream ProcessStatus) {}
+    rpc GetRadarDataDumpFileInfo(google.protobuf.Empty) returns (FileInfo) {}
+    rpc DownloadRadarFrameData(FetchRadarDataRequest) returns (FetchDataResponse) {}
+    //
+    rpc QuerySensorSwitchItemFirst(google.protobuf.Empty) returns (Time) {}
+    rpc QuerySensorSwitchTimeaxisItems(TimeRange) returns (TimeaxisItems) {}
+    rpc QuerySensorSwitchItems(TimeRange) returns (SensorSwitchItems) {}
+    //
+    rpc QueryMotionCurveDataFirst(google.protobuf.Empty) returns (Time) {}
+    rpc QueryMotionCurveDatas(ResampleTimeRange) returns (CurveItemDatas) {}
+    //
+    rpc QueryDistanceSensorDataFirst(google.protobuf.Empty) returns (Time) {}
+    rpc QueryDistanceSensorDatas(ResampleTimeRange) returns (CurveItemDatas) {}
+    //
+    rpc QueryLoadRatioFirst(google.protobuf.Empty) returns (Time) {}
+    rpc QueryLoadRatios(ResampleTimeRange) returns (CurveItemDatas) {}
+    // //
+    // rpc QueryRobotStatusFirst(google.protobuf.Empty) returns (Time) {}
+    // rpc QueryRobotStatuses(TimeRange) returns (RobotStatuses) {}
+    // rpc StartListenRobotStatuses(UserLanguageSession) returns (stream RobotStatus) {}
+    // rpc StopListenRobotStatuses(UserSession) returns (google.protobuf.Empty) {}
+    // //
+    rpc CreateRosbagDumpFile(RosbagTimeRange) returns (stream ProcessStatus) {}
+    rpc GetRosbagDumpFileInfo(RosbagTypeItem) returns (FileInfo) {}
+    // //
+    rpc CreateCanDumpFile(TimeRange) returns (stream ProcessStatus) {}
+    rpc GetCanDumpFileInfo(google.protobuf.Empty) returns (FileInfo) {}
+    // //
+    rpc CreateDatabaseDumpFile(ExtTimeRange) returns (stream ProcessStatus) {}
+    rpc GetDatabaseDumpFileInfo(google.protobuf.Empty) returns (FileInfo) {}
+    //
+    rpc GetVdumpsFileLists(SteadyTimeRange) returns (StringValues) {}
+    rpc GetVdumpsFileData(google.protobuf.StringValue) returns (google.protobuf.BytesValue) {}
+}
+
+service RealtimeDataProvider {
+    rpc StartListenAgvLogs(UserLanguageSession) returns (stream AgvLog) {}
+    rpc StopListenAgvLogs(UserSession) returns (google.protobuf.Empty) {}
+    //
+    rpc StartListenAgvStateLogs(UserLanguageSession) returns (stream AgvStateLog) {}
+    rpc StopListenAgvStateLogs(UserSession) returns (google.protobuf.Empty) {}
+    //
+    rpc StartListenBatteryStatus(UserSession) returns (stream BatteryStatus) {}
+    rpc StopListenBatteryStatus(UserSession) returns (google.protobuf.Empty) {}
+    //
+    rpc StartReplayRadarData(ReplayInfo) returns (stream RadarPageDatas) {}
+    rpc StopReplayRadarData(UserSession) returns (google.protobuf.Empty) {}
+    //
+    rpc StartListenSensorSwitches(UserSession) returns (stream SensorSwitchItems) {}
+    rpc StopListenSensorSwitches(UserSession) returns (google.protobuf.Empty) {}
+    //
+    rpc StartListenDistanceSensors(UserSession) returns (stream CurveItemDatas) {}
+    rpc StopListenDistanceSensors(UserSession) returns (google.protobuf.Empty) {}
+    //
+    rpc StartListenLoadRatios(UserSession) returns (stream CurveItemDatas) {}
+    rpc StopListenLoadRatios(UserSession) returns (google.protobuf.Empty) {}
+    //
+    rpc StartListenMotionCurves(UserSession) returns (stream CurveItemDatas) {}
+    rpc StopListenMotionCurves(UserSession) returns (google.protobuf.Empty) {}
+    //
+    rpc StartListenRobotStatuses(UserSession) returns (stream RobotStatus) {}
+}
+
+service OperationProvider {
+    rpc SyncTimeView(TimeViews) returns (TimeViews) {}
+    rpc SetEnableReadOnlyMode(OptionBoolValue) returns (google.protobuf.BoolValue) {}
+    rpc GetSearchMatchingItems(TimeRange) returns (MatchingCountedConditions) {}
+    rpc SearchMatchingActions(MatchingRequest) returns (MatchingResponse) {}
+}

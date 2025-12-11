@@ -15,6 +15,7 @@ enum MarkerIssueType {
   misaligned,      // 贴歪
   wrongCode,       // 贴错
   lowConfidence,   // 置信度低
+  angleDeviation,  // 角度不准
 }
 
 enum GroundIssueType {

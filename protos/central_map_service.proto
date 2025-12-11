@@ -1,0 +1,411 @@
+syntax = "proto3";
+
+package galaxis.map;
+
+import "elements.proto";
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/empty.proto";
+
+message StoredMappingData {
+    repeated BusinessMap businessMap = 1;
+    StoredPrivateData privateData = 2;
+    optional int64 internalVersion = 3;
+}
+message StoredPrivateData {
+    repeated StoredMapItem inPathSiteIndex = 1;
+    repeated StoredMapItem inSitePathIndex = 2;
+    repeated StoredEntityInfo entityInfos = 3;
+    repeated ToolingData toolingData = 4;
+}
+message StoredMapItem {
+    int32 key = 1;
+    repeated int32 value = 2;
+}
+message StoredEntityInfo {
+    int64 key = 1;
+    EntityInfo entity = 2;
+}
+
+message ServerAddr {
+    string ip_addr = 1;
+    int32 port = 2;
+    string username = 3;
+    string password = 4;
+}
+message MapServiceInfo {
+    repeated int64 business_map_ids = 1;
+    optional ServerAddr rcs_server = 2;
+    optional ServerAddr neo4j_server = 3;
+    string rcs_data_path = 4;
+    string rcs_restart_cmd = 5;
+    repeated string passable_robots = 6;
+}
+message ProjectInfo {
+    string project_id = 1;
+    string project_name = 2;
+    string author = 3;
+    string summary = 4;
+    repeated MapServiceInfo map_services = 5;
+}
+message ProjectInfos {
+    repeated ProjectInfo project_infos = 1;
+}
+
+message MapVersionInfo {
+    string version_id = 1;
+    string author = 2;
+    int64 timestamp = 3;
+    string summary = 4;
+}
+message MapVersionInfos {
+    repeated MapVersionInfo map_ver_infos = 1;
+}
+
+message PartnerMapInfo {
+    int64 business_map_id = 1;
+    string map_code = 2;
+    string map_version = 3;
+}
+message PartnerMapInfos {
+    repeated PartnerMapInfo infos = 1;
+}
+
+message ProjectIdMessage {
+    string project_id = 1;
+}
+
+message VersionIdMessage {
+    string version_id = 1;
+}
+
+message VersionMessage {
+    string project_id = 1;
+    string version_id = 2;
+}
+
+message MapVersionMessage {
+    string project_id = 1;
+    string version_id = 2;
+    int64 business_map_id = 3;
+}
+
+message Neo4jMarkValue {
+    int64 id = 1;
+    string mark_value = 2;
+}
+message Neo4jMarkValues {
+    repeated int64 bsmap_ids = 1;
+    repeated Neo4jMarkValue values = 2;
+}
+message Neo4jMarkValueResponse {
+    repeated Neo4jMarkValues values = 1;
+}
+message UploadNeo4jMarkValuesRequest {
+    VersionMapSpecifyData data = 1;
+    repeated Neo4jMarkValue values = 2;
+}
+
+message ProjectMapData {
+    ProjectInfo info = 1;
+    MappingData map_data = 2;
+    repeated PartnerMapData par_map_datas = 3;
+}
+
+message PartnerMapData {
+    int64 bsmap_id = 1;
+    string par_map_data = 2;
+}
+
+message CommitMapDataRequest {
+    string project_id = 1;
+    string version_id = 2;
+    string author = 3;
+    string summary = 4;
+    optional MappingData map_data = 5;
+    optional ProjectInfo info = 6;
+    repeated PartnerMapData par_map_datas = 7;
+    repeated int64 remove_par_bsmap_ids = 8;
+}
+
+message RestoreNeo4jBackupFileRequest {
+    optional VersionMapSpecifyData data = 1;
+    string backup_file = 2;
+}
+
+enum Neo4jOperation {
+    ClearDuplicateMarkCode = 0;
+}
+message Neo4jOperationRequest {
+    VersionMapSpecifyData data = 1;
+    Neo4jOperation oper = 2;
+}
+
+message MapEventRequest {
+    string project_id = 1;
+    int64 business_map_id = 2;
+    optional int64 last_update_ts = 3;
+}
+
+message NodeMarkerCode {
+    int64 node_id = 1;
+    string marker_code = 2;
+}
+message NodeMarkerCodes {
+    repeated NodeMarkerCode markers = 1;
+}
+message MapEvent {
+    oneof map_event_type {
+        google.protobuf.Empty clear_cache = 1;
+        VersionIdMessage active = 2;
+        NodeMarkerCodes markers = 3;
+    }
+}
+message MapEvents {
+    int64 update_ts = 1;
+    repeated MapEvent events = 2;
+}
+
+message UpdateMarkerCodesRequest {
+    string project_id = 1;
+    string version_id = 2;
+    int64 business_map_id = 3;
+    repeated NodeMarkerCode markers = 4;
+}
+
+message VersionMapSpecifyData {
+    string project_id = 1;
+    string version_id = 2;
+    repeated int64 business_map_ids = 3;
+    repeated string specify_robots = 4;
+}
+
+message Neo4jVersionInfo {
+    repeated int64 bsmap_ids = 1;
+    optional string neo4j_project_id = 2;
+    optional string neo4j_version_id = 3;
+}
+message Neo4jVersionInfoResponse {
+    repeated Neo4jVersionInfo infos = 1;
+}
+
+message RcsVersionInfo {
+    repeated int64 business_map_ids = 1;
+    optional string rcs_version_id = 2;
+    bool need_update = 3;
+}
+message RcsVersionInfoResponse {
+    repeated RcsVersionInfo rcs_vers = 1;
+}
+
+message UploadNeo4jDataRequest {
+    VersionMapSpecifyData data = 1;
+    repeated string cmds = 2; // "merge_map.py", "merge_goods_stack.py", "merge_goods_slot.py"
+    optional string a_arg = 3;
+}
+
+message UploadNeo4jData {
+    repeated int64 bsmap_ids = 1;
+    string accept_a_arg = 2;
+    string output = 3;
+}
+message UploadNeo4jDataResponse {
+    repeated UploadNeo4jData data = 1;
+}
+
+message StringItems {
+    repeated string items = 1;
+}
+
+message CheckPartnerMapCompatibleRequest {
+    string project_id = 1;
+    int64 bsmap_id = 2;
+    string par_map_code = 3;
+    string par_map_ver = 4;
+}
+
+message CommitPartnerMapAndUpgradeRequest {
+    int64 agv_id = 1;
+    string project_id = 2;
+    int64 bsmap_id = 3;
+    string par_map_data = 4;
+}
+
+message SetMapMarkerCodeRequest {
+    int64 agv_id = 1;
+    string project_id = 2;
+    string version_id = 3;
+    int64 bsmap_id = 4;
+    int64 logic_x = 5;
+    int64 logic_y = 6;
+    string marker_code = 7;
+}
+
+//
+
+message GetMapDataPartRequest {
+    string project_id = 1;
+    string version_id = 2;
+    repeated int64 business_map_ids = 3;
+    bool ContainsPrivateData = 4;
+}
+
+message GetMapDataDetailPartRequest {
+    string project_id = 1;
+    string version_id = 2;
+    int64 business_map_id = 3;
+    repeated MapDataItem query_items = 4;
+}
+
+message MapDataItem {
+    ElementType item_type = 1;
+    int64 item_id = 2;
+}
+
+message MapDataItems {
+    repeated MapDataItem items = 1;
+}
+
+message CommitMapDataDiffRequest {
+    string project_id = 1;
+    string version_id = 2;
+    string author = 3;
+    string summary = 4;
+    optional MappingDataDiff content = 5;
+    optional ProjectInfo info = 6;
+    repeated PartnerMapData par_map_datas = 7;
+    repeated int64 remove_par_bsmap_ids = 8;
+}
+
+message VersionsMessage {
+    string project_id = 1;
+    string version_id1 = 2;
+    string version_id2 = 3;
+}
+
+message PrivateDataDiff {
+    optional PrivateData modify_pvdata = 1;      // 增加、修改的项
+    repeated int32 remove_in_path_site_idxs = 2;
+    repeated int32 remove_in_site_path_idxs = 3;
+    repeated int64 remove_entity_info_ids = 4;
+    repeated int64 remove_tooling_data_ids = 5;
+}
+
+message BusinessMapDiff {
+    int64 bsmap_id = 1;
+    optional BusinessMap modify_bsmap = 2;       // 增加、修改的项
+    repeated int64 remove_node_ids = 3;
+    repeated int64 remove_edge_ids = 4;
+    repeated int64 remove_goods_slot_ids = 5;
+    repeated int64 remove_conflict_zone_ids = 6;
+    repeated int64 remove_rack_ids = 7;
+    repeated int64 remove_property_objects_ids = 8;
+    repeated int64 remove_functional_block_ids = 9;
+    repeated int64 remove_goods_stack_data_ids = 10;
+}
+
+message MappingDataDiff {
+    repeated BusinessMapDiff modify_items = 1;
+    repeated int64 remove_bsmap_ids = 2;
+    optional PrivateDataDiff pvdata_diff = 3;
+}
+
+message NodePart {
+    int64 id = 1;
+    MarkerType markerType = 2;
+    optional Point location = 3;
+    optional Point logicLocation = 4;
+}
+
+message EdgePart {
+    int64 id = 1;
+    int64 endpoint1Id = 2;
+    int64 endpoint2Id = 3;
+}
+
+message GoodsSlotPart {
+    int64 id = 1;
+    optional string horizontalGroupId = 2;
+    optional string verticalGroupId = 3;
+    optional string localNumber = 4;
+    optional string displayNumber = 5;
+}
+
+message ConflictZonePart {
+    int64 id = 1;
+    repeated Point pointList = 2;
+    repeated int32 includeDataId = 3;
+    ConflictZoneType conflictZoneType = 4;
+}
+
+message BusinessMapPart {
+    string floorName = 1;
+    int64 id = 2;
+    int32 floorNum = 3;
+    repeated NodePart node = 4;
+    repeated EdgePart edge = 5;
+    repeated GoodsSlotPart goodsSlot = 6;
+    repeated ConflictZonePart conflictZone = 7;
+    //   repeated Rack rack = 8;
+    //   GlobalDefaultData globalDefaultData = 9;
+    //   repeated PropertyObject propertyObjects = 10;
+    //   repeated Rule rules = 11;
+    //   repeated FunctionalBlock functionalBlock = 12;
+    //   repeated ServerAddress serverAddress = 13;
+    //   repeated GoodsStackData goodsStackData = 14;
+}
+
+message MappingDataPart {
+    repeated BusinessMapPart businessMap = 1;
+    optional PrivateData privateData = 2;
+}
+
+//
+
+service CentralMapService {
+    // query
+    rpc GetVersion(google.protobuf.Empty) returns (google.protobuf.StringValue);
+    rpc GetProjectList(google.protobuf.Empty) returns (ProjectInfos);
+    rpc GetMapList(ProjectIdMessage) returns (MapVersionInfos);
+    rpc GetMapData(VersionMessage) returns (MappingData);
+    rpc QueryNeo4jMarkValues(VersionMapSpecifyData) returns (Neo4jMarkValueResponse);
+
+    // update
+    rpc DeleteProject(ProjectIdMessage) returns (google.protobuf.Empty);
+    rpc CreateProject(ProjectMapData) returns (google.protobuf.StringValue);
+    rpc CommitProjectMapData(CommitMapDataRequest) returns (google.protobuf.StringValue);
+
+    // part of query and update
+    rpc GetMapDataPart(GetMapDataPartRequest) returns (MappingDataPart);               // for future
+    rpc GetMapDataDetailPart(GetMapDataDetailPartRequest) returns (BusinessMap);       // for future
+    rpc CommitProjectMapDataDiff(CommitMapDataDiffRequest) returns (google.protobuf.StringValue);
+    rpc GetProjectMapDataDiff(VersionsMessage) returns (MappingDataDiff);
+    rpc GetNeo4jVersionInfo(VersionMapSpecifyData) returns (Neo4jVersionInfoResponse);
+    rpc GetRcsVersionInfo(VersionMapSpecifyData) returns (RcsVersionInfoResponse);     // obsolete
+
+    // operation with rcs
+    rpc ExportRcsJson(VersionMapSpecifyData) returns (google.protobuf.StringValue);
+    rpc UploadRcsMapJsonData(VersionMapSpecifyData) returns (google.protobuf.Empty);   // obsolete
+    rpc RestartRcs(VersionMapSpecifyData) returns (google.protobuf.StringValue);       // obsolete
+
+    // operation with neo4j
+    rpc UploadNeo4jData(UploadNeo4jDataRequest) returns (UploadNeo4jDataResponse);
+    rpc UploadNeo4jDataIncrement(VersionMapSpecifyData) returns (google.protobuf.Empty);
+    rpc UploadNeo4jMarkValues(UploadNeo4jMarkValuesRequest) returns (google.protobuf.Empty);
+    rpc Neo4jOperation(Neo4jOperationRequest) returns (google.protobuf.StringValue);
+
+    // operation without neo4j
+    rpc GetActivedMapVersion(ProjectIdMessage) returns (google.protobuf.StringValue);
+    rpc ActiveMapVersion(VersionMessage) returns (google.protobuf.Empty);
+    rpc UpdateMarkerCodes(UpdateMarkerCodesRequest) returns (google.protobuf.Empty);
+    rpc SubscribeMapEvents(MapEventRequest) returns (stream MapEvents);
+
+    // backup
+    rpc GetTempFiles(google.protobuf.StringValue) returns (StringItems);
+    rpc RestoreNeo4jBackupFile(RestoreNeo4jBackupFileRequest) returns (google.protobuf.StringValue);
+
+    // partner
+    rpc GetPartnerMapInfos(VersionMessage) returns (PartnerMapInfos);
+    rpc GetPartnerMapData(MapVersionMessage) returns (google.protobuf.StringValue);
+    rpc CheckPartnerMapCompatible(CheckPartnerMapCompatibleRequest) returns (google.protobuf.BoolValue);
+    rpc CommitPartnerMapAndUpgrade(CommitPartnerMapAndUpgradeRequest) returns (google.protobuf.Empty);
+}

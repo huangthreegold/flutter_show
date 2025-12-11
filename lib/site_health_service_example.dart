@@ -3,7 +3,7 @@ import 'site_health_grpc_service.dart';
 import 'site_health_models.dart';
 
 /// 场地健康服务使用示例
-/// 
+///
 /// 这个文件演示如何使用新添加的 SiteHealthService 接口
 class SiteHealthServiceExample {
   final SiteHealthGrpcService grpcService;
@@ -113,7 +113,11 @@ class SiteHealthServiceExample {
       ),
     ];
 
-    await grpcService.batchReportSiteHealthInfo(markerHealths, groundHealths, []);
+    await grpcService.batchReportSiteHealthInfo(
+      markerHealths,
+      groundHealths,
+      [],
+    );
     print('✓ 已批量上报 ${markerHealths.length + groundHealths.length} 条异常');
   }
 
@@ -156,7 +160,9 @@ class SiteHealthServiceExample {
 
     print('📊 货架 501 的信息:');
     for (var goods in response.goodsSlotHealths) {
-      print('  • 车辆${goods.carId}: 高度差=${goods.heightDifference}mm, 状态=${goods.healthStatus.name}');
+      print(
+        '  • 车辆${goods.carId}: 高度差=${goods.heightDifference}mm, 状态=${goods.healthStatus.name}',
+      );
     }
   }
 
@@ -200,7 +206,7 @@ class SiteHealthServiceExample {
     print('  异常次数: ${analysis.exceptionCount}');
     print('  异常概率: ${(analysis.exceptionRate * 100).toStringAsFixed(1)}%');
     print('  涉及车辆: ${analysis.uniqueCarCount}辆');
-    
+
     if (analysis.isLocationRelated) {
       print('  ⚠️  判断: 这是一个场地问题！');
       print('  受影响车辆: ${analysis.affectedCarIds.join(', ')}');
@@ -221,7 +227,7 @@ class SiteHealthServiceExample {
     print('  异常次数: ${analysis.exceptionCount}');
     print('  异常概率: ${(analysis.exceptionRate * 100).toStringAsFixed(1)}%');
     print('  受影响位置: ${analysis.affectedLocationCount}个');
-    
+
     if (analysis.isCarRelated) {
       print('  🔴 警告: 这是一个车辆问题！');
       print('  受影响位置ID: ${analysis.affectedNodeIds.join(', ')}');
@@ -276,7 +282,7 @@ class SiteHealthServiceExample {
   /// 订阅健康状态实时变化
   void subscribeHealthChanges() {
     final stream = grpcService.subscribeHealthStatus();
-    
+
     stream.listen(
       (event) {
         print('📡 收到健康状态更新:');
@@ -358,9 +364,7 @@ class _HealthMonitoringWidgetState extends State<HealthMonitoringWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('场地健康监控'),
-      ),
+      appBar: AppBar(title: const Text('场地健康监控')),
       body: FutureBuilder<HealthStatistics>(
         future: _statsFuture,
         builder: (context, snapshot) {
@@ -381,7 +385,10 @@ class _HealthMonitoringWidgetState extends State<HealthMonitoringWidget> {
                     children: [
                       const Text(
                         '整体健康分数',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 12),
                       LinearProgressIndicator(
@@ -391,14 +398,17 @@ class _HealthMonitoringWidgetState extends State<HealthMonitoringWidget> {
                       const SizedBox(height: 8),
                       Text(
                         '${(stats.overallHealthScore * 100).toStringAsFixed(1)}%',
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 16),
-              
+
               // 节点统计
               Card(
                 child: Padding(
@@ -408,11 +418,22 @@ class _HealthMonitoringWidgetState extends State<HealthMonitoringWidget> {
                     children: [
                       const Text(
                         '节点状态',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 12),
-                      _buildStatRow('✓ 正常', '${stats.normalNodes}/${stats.totalNodes}', Colors.green),
-                      _buildStatRow('⚠️  警告', '${stats.warningNodes}', Colors.orange),
+                      _buildStatRow(
+                        '✓ 正常',
+                        '${stats.normalNodes}/${stats.totalNodes}',
+                        Colors.green,
+                      ),
+                      _buildStatRow(
+                        '⚠️  警告',
+                        '${stats.warningNodes}',
+                        Colors.orange,
+                      ),
                       _buildStatRow('❌ 错误', '${stats.errorNodes}', Colors.red),
                     ],
                   ),
@@ -429,11 +450,22 @@ class _HealthMonitoringWidgetState extends State<HealthMonitoringWidget> {
                     children: [
                       const Text(
                         '货架状态',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 12),
-                      _buildStatRow('✓ 正常', '${stats.normalGoodsSlots}/${stats.totalGoodsSlots}', Colors.green),
-                      _buildStatRow('⚠️  警告', '${stats.warningGoodsSlots}', Colors.orange),
+                      _buildStatRow(
+                        '✓ 正常',
+                        '${stats.normalGoodsSlots}/${stats.totalGoodsSlots}',
+                        Colors.green,
+                      ),
+                      _buildStatRow(
+                        '⚠️  警告',
+                        '${stats.warningGoodsSlots}',
+                        Colors.orange,
+                      ),
                     ],
                   ),
                 ),
@@ -460,10 +492,7 @@ class _HealthMonitoringWidgetState extends State<HealthMonitoringWidget> {
             ),
             child: Text(
               value,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold, color: color),
             ),
           ),
         ],

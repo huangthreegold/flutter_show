@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package galaxis.map;
+
+import "google/protobuf/empty.proto";
+
+//地图服务需要(id 和码值数据)做码值更新
+message CurrentMarkData {
+  int64 id = 1;
+  string marker_code = 2;
+  //optional Point logic_location = 3;
+}
+
+service MapHealthService {
+    //小车读取到新的二维码码值时上报数据
+    rpc ReportCurrentMarkData(CurrentMarkData) returns(google.protobuf.Empty);
+}

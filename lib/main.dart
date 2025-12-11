@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
-import 'site_health_grpc_service.dart';
-import 'site_health_models.dart';
+
+// 选择数据源：
+// 1. 使用真实 gRPC 服务
+import 'site_health_real_grpc_service.dart';
+// 2. 使用模拟数据（开发测试用）
+// import 'site_health_grpc_service.dart';
+
+import 'site_health_grpc_service.dart' show VehicleStatusData;
+import 'grpc_config.dart';
+import 'generated/site_health.pbgrpc.dart' as pb;
+import 'generated/site_health.pbenum.dart';
 
 void main() {
   runApp(const SiteHealthApp());
@@ -13,10 +22,7 @@ class SiteHealthApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: '场地健康监控系统',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
       home: const SiteHealthDashboard(),
     );
   }
@@ -31,25 +37,82 @@ class SiteHealthDashboard extends StatefulWidget {
 
 class _SiteHealthDashboardState extends State<SiteHealthDashboard> {
   int _selectedIndex = 0;
-  late final SiteHealthGrpcService _grpcService;
+  // 使用真实 gRPC 服务
+  late final SiteHealthRealGrpcService _grpcService;
+  // 如果要使用模拟数据，改为: late final SiteHealthGrpcService _grpcService;
+
   late final List<Widget> _pages;
+  bool _isConnecting = true;
+  String _connectionStatus = '正在连接...';
 
   @override
   void initState() {
     super.initState();
-    _grpcService = SiteHealthGrpcService();
-    // 初始化 gRPC 连接
-    _grpcService.connect('localhost', 50051).catchError((error) {
-      print('gRPC 连接失败: $error，将使用模拟数据');
-    });
-    
+    _grpcService = SiteHealthRealGrpcService();
+    // 如果使用模拟数据，改为: _grpcService = SiteHealthGrpcService();
+
+    // 连接到 gRPC 服务器
+    // TODO: 修改为你的服务器地址和端口
+    _connectToServer();
+
     _pages = [
-      OverviewPage(grpcService: _grpcService),
-      const QRCodeAnalysisPage(),
-      const GroundAnalysisPage(),
+      // OverviewPage(grpcService: _grpcService), // 已隐藏
+      QRCodeAnalysisPage(grpcService: _grpcService),
+      GroundAnalysisPage(grpcService: _grpcService),
       VehicleStatusPage(grpcService: _grpcService),
       const ReportsPage(),
     ];
+  }
+
+  Future<void> _connectToServer() async {
+    try {
+      // 连接到服务器 - 在 grpc_config.dart 中配置服务器地址
+      await _grpcService.connect(GrpcConfig.host, GrpcConfig.port);
+
+      setState(() {
+        _isConnecting = false;
+        _connectionStatus = '✓ 已连接到 gRPC 服务器';
+      });
+
+      // 显示成功提示
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✓ 已连接到 gRPC 服务器，正在获取实时数据'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (error) {
+      setState(() {
+        _isConnecting = false;
+        _connectionStatus = '✗ 连接失败: $error';
+      });
+
+      // 显示错误提示
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '连接失败: $error\n请检查服务器是否运行在 ${GrpcConfig.host}:${GrpcConfig.port}',
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+            action: SnackBarAction(
+              label: '重试',
+              textColor: Colors.white,
+              onPressed: () {
+                setState(() {
+                  _isConnecting = true;
+                });
+                _connectToServer();
+              },
+            ),
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -66,14 +129,58 @@ class _SiteHealthDashboardState extends State<SiteHealthDashboard> {
         centerTitle: true,
         elevation: 2,
         actions: [
+          // 连接状态指示器
+          if (_isConnecting)
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+            )
+          else
+            IconButton(
+              icon: Icon(
+                _grpcService.isConnected ? Icons.cloud_done : Icons.cloud_off,
+                color: _grpcService.isConnected ? Colors.green : Colors.red,
+              ),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('gRPC 连接状态'),
+                    content: Text(_connectionStatus),
+                    actions: [
+                      if (!_grpcService.isConnected)
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            setState(() {
+                              _isConnecting = true;
+                            });
+                            _connectToServer();
+                          },
+                          child: const Text('重新连接'),
+                        ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text('关闭'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              tooltip: _connectionStatus,
+            ),
           IconButton(
             icon: const Icon(Icons.notifications),
             onPressed: _showNotifications,
           ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _refreshData,
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _refreshData),
         ],
       ),
       body: _pages[_selectedIndex],
@@ -86,26 +193,14 @@ class _SiteHealthDashboardState extends State<SiteHealthDashboard> {
           });
         },
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: '概览',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.qr_code),
-            label: '二维码异常',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.landscape),
-            label: '地面异常',
-          ),
+          // BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: '概览'), // 已隐藏
+          BottomNavigationBarItem(icon: Icon(Icons.qr_code), label: '二维码异常'),
+          BottomNavigationBarItem(icon: Icon(Icons.landscape), label: '地面异常'),
           BottomNavigationBarItem(
             icon: Icon(Icons.directions_car),
             label: '车辆状态',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.assignment),
-            label: '报告',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.assignment), label: '报告'),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -147,7 +242,7 @@ class _SiteHealthDashboardState extends State<SiteHealthDashboard> {
             onPressed: () {
               Navigator.pop(context);
               setState(() {
-                _selectedIndex = 2; // 跳转到地面异常页面
+                _selectedIndex = 1; // 跳转到地面异常页面（隐藏概览后索引改变）
               });
             },
             child: const Text('立即查看'),
@@ -166,10 +261,7 @@ class _SiteHealthDashboardState extends State<SiteHealthDashboard> {
 
   void _refreshData() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('数据刷新中...'),
-        duration: Duration(seconds: 1),
-      ),
+      const SnackBar(content: Text('数据刷新中...'), duration: Duration(seconds: 1)),
     );
   }
 }
@@ -253,10 +345,7 @@ class NotificationItem extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(
-            Icons.notifications,
-            color: isRead ? Colors.grey : Colors.blue,
-          ),
+          Icon(Icons.notifications, color: isRead ? Colors.grey : Colors.blue),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -274,10 +363,7 @@ class NotificationItem extends StatelessWidget {
               ],
             ),
           ),
-          Text(
-            time,
-            style: const TextStyle(color: Colors.grey, fontSize: 12),
-          ),
+          Text(time, style: const TextStyle(color: Colors.grey, fontSize: 12)),
         ],
       ),
     );
@@ -286,8 +372,8 @@ class NotificationItem extends StatelessWidget {
 
 // ===================== 概览页面 =====================
 class OverviewPage extends StatefulWidget {
-  final SiteHealthGrpcService grpcService;
-  
+  final SiteHealthRealGrpcService grpcService;
+
   const OverviewPage({super.key, required this.grpcService});
 
   @override
@@ -305,15 +391,15 @@ class _OverviewPageState extends State<OverviewPage> {
           // gRPC 连接状态指示器
           _buildConnectionStatus(),
           const SizedBox(height: 16),
-          
+
           // 关键指标卡片 (使用实时数据)
           _buildKeyMetrics(),
           const SizedBox(height: 24),
-          
+
           // 异常分布
           _buildExceptionDistribution(),
           const SizedBox(height: 24),
-          
+
           // 实时异常列表 (使用 gRPC 数据流)
           _buildRecentAlerts(),
         ],
@@ -325,7 +411,9 @@ class _OverviewPageState extends State<OverviewPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: widget.grpcService.isConnected ? Colors.green.shade50 : Colors.orange.shade50,
+        color: widget.grpcService.isConnected
+            ? Colors.green.shade50
+            : Colors.orange.shade50,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: widget.grpcService.isConnected ? Colors.green : Colors.orange,
@@ -336,14 +424,18 @@ class _OverviewPageState extends State<OverviewPage> {
         children: [
           Icon(
             widget.grpcService.isConnected ? Icons.check_circle : Icons.warning,
-            color: widget.grpcService.isConnected ? Colors.green : Colors.orange,
+            color: widget.grpcService.isConnected
+                ? Colors.green
+                : Colors.orange,
             size: 16,
           ),
           const SizedBox(width: 8),
           Text(
             widget.grpcService.isConnected ? 'gRPC 已连接' : 'gRPC 未连接 (使用模拟数据)',
             style: TextStyle(
-              color: widget.grpcService.isConnected ? Colors.green.shade800 : Colors.orange.shade800,
+              color: widget.grpcService.isConnected
+                  ? Colors.green.shade800
+                  : Colors.orange.shade800,
               fontSize: 12,
             ),
           ),
@@ -356,13 +448,15 @@ class _OverviewPageState extends State<OverviewPage> {
     return StreamBuilder<Map<String, int>>(
       stream: widget.grpcService.getRealtimeMetrics(),
       builder: (context, snapshot) {
-        final metrics = snapshot.data ?? {
-          'normalVehicles': 12,
-          'abnormalVehicles': 3,
-          'qrCodeAnomalies': 8,
-          'groundAnomalies': 3,
-        };
-        
+        final metrics =
+            snapshot.data ??
+            {
+              'normalVehicles': 12,
+              'abnormalVehicles': 3,
+              'qrCodeAnomalies': 8,
+              'groundAnomalies': 3,
+            };
+
         return GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -406,14 +500,6 @@ class _OverviewPageState extends State<OverviewPage> {
   }
 
   Widget _buildExceptionDistribution() {
-    final data = [
-      {'type': '间距不准', 'count': 12, 'color': Colors.blue},
-      {'type': '二维码贴歪', 'count': 8, 'color': Colors.orange},
-      {'type': '污损脏污', 'count': 15, 'color': Colors.red},
-      {'type': '地面不平', 'count': 7, 'color': Colors.green},
-      {'type': '贴反/贴错', 'count': 3, 'color': Colors.purple},
-    ];
-
     return Card(
       elevation: 2,
       child: Padding(
@@ -426,7 +512,123 @@ class _OverviewPageState extends State<OverviewPage> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            ...data.map((item) => _buildDistributionItem(item)).toList(),
+            FutureBuilder<pb.HealthInfoQueryResponse>(
+              future: widget.grpcService.queryHealthInfo(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+
+                if (snapshot.hasError || !snapshot.hasData) {
+                  return const Center(child: Text('加载异常数据失败'));
+                }
+
+                final response = snapshot.data!;
+
+                // 统计二维码异常类型
+                final markerIssues = <String, List<pb.MarkerHealthInfo>>{};
+                for (var marker in response.markerHealths) {
+                  if (marker.healthStatus !=
+                      HealthStatus.HEALTH_STATUS_NORMAL) {
+                    final issueType = _getMarkerIssueTypeName(marker.issueType);
+                    markerIssues.putIfAbsent(issueType, () => []).add(marker);
+                  }
+                }
+
+                // 统计地面异常类型
+                final groundIssues = <String, List<pb.GroundHealthInfo>>{};
+                for (var ground in response.groundHealths) {
+                  if (ground.healthStatus !=
+                      HealthStatus.HEALTH_STATUS_NORMAL) {
+                    final issueType = _getGroundIssueTypeName(ground.issueType);
+                    groundIssues.putIfAbsent(issueType, () => []).add(ground);
+                  }
+                }
+
+                // 合并并按严重程度排序
+                final allIssues = <Map<String, dynamic>>[];
+
+                // 添加二维码异常
+                markerIssues.forEach((type, markers) {
+                  final critical = markers
+                      .where(
+                        (m) =>
+                            m.healthStatus ==
+                            HealthStatus.HEALTH_STATUS_CRITICAL,
+                      )
+                      .length;
+                  final warning = markers
+                      .where(
+                        (m) =>
+                            m.healthStatus ==
+                            HealthStatus.HEALTH_STATUS_WARNING,
+                      )
+                      .length;
+                  allIssues.add({
+                    'type': type,
+                    'category': '二维码异常',
+                    'count': markers.length,
+                    'critical': critical,
+                    'warning': warning,
+                    'items': markers,
+                    'severity': critical * 3 + warning, // 用于排序
+                  });
+                });
+
+                // 添加地面异常
+                groundIssues.forEach((type, grounds) {
+                  final critical = grounds
+                      .where(
+                        (g) =>
+                            g.healthStatus ==
+                            HealthStatus.HEALTH_STATUS_CRITICAL,
+                      )
+                      .length;
+                  final warning = grounds
+                      .where(
+                        (g) =>
+                            g.healthStatus ==
+                            HealthStatus.HEALTH_STATUS_WARNING,
+                      )
+                      .length;
+                  allIssues.add({
+                    'type': type,
+                    'category': '地面异常',
+                    'count': grounds.length,
+                    'critical': critical,
+                    'warning': warning,
+                    'items': grounds,
+                    'severity': critical * 3 + warning,
+                  });
+                });
+
+                // 按严重程度排序（critical越多越靠前）
+                allIssues.sort(
+                  (a, b) =>
+                      (b['severity'] as int).compareTo(a['severity'] as int),
+                );
+
+                if (allIssues.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text('暂无异常数据'),
+                    ),
+                  );
+                }
+
+                return Column(
+                  children: allIssues
+                      .map((item) => _buildDistributionItem(item))
+                      .toList(),
+                );
+              },
+            ),
           ],
         ),
       ),
@@ -434,39 +636,258 @@ class _OverviewPageState extends State<OverviewPage> {
   }
 
   Widget _buildDistributionItem(Map<String, dynamic> item) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: item['color'] as Color,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(item['type'] as String),
-                ],
+    final critical = item['critical'] as int;
+    final warning = item['warning'] as int;
+    final count = item['count'] as int;
+    final type = item['type'] as String;
+    final category = item['category'] as String;
+
+    // 根据严重程度确定颜色
+    final color = critical > 0
+        ? Colors.red
+        : (warning > 0 ? Colors.orange : Colors.blue);
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ExpansionTile(
+        leading: Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                type,
+                style: const TextStyle(fontWeight: FontWeight.w500),
               ),
-              Text('${item['count']}次'),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                category,
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+              ),
+            ),
+          ],
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Row(
+            children: [
+              if (critical > 0) ...[
+                Icon(Icons.error, size: 14, color: Colors.red),
+                const SizedBox(width: 4),
+                Text(
+                  '严重: $critical',
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+                const SizedBox(width: 12),
+              ],
+              if (warning > 0) ...[
+                Icon(Icons.warning, size: 14, color: Colors.orange),
+                const SizedBox(width: 4),
+                Text(
+                  '警告: $warning',
+                  style: TextStyle(color: Colors.orange, fontSize: 12),
+                ),
+              ],
             ],
           ),
-          const SizedBox(height: 4),
-          LinearProgressIndicator(
-            value: (item['count'] as int) / 20,
-            backgroundColor: Colors.grey.shade300,
-            valueColor: AlwaysStoppedAnimation<Color>(item['color'] as Color),
+        ),
+        trailing: Text(
+          '$count 项',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: _buildIssueDetailsList(item),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildIssueDetailsList(Map<String, dynamic> item) {
+    final items = item['items'] as List;
+    final category = item['category'] as String;
+
+    if (category == '二维码异常') {
+      final markers = items.cast<pb.MarkerHealthInfo>();
+      return Column(
+        children: markers.map((marker) => _buildMarkerDetail(marker)).toList(),
+      );
+    } else {
+      final grounds = items.cast<pb.GroundHealthInfo>();
+      return Column(
+        children: grounds.map((ground) => _buildGroundDetail(ground)).toList(),
+      );
+    }
+  }
+
+  Widget _buildMarkerDetail(pb.MarkerHealthInfo marker) {
+    final statusColor = _getStatusColor(marker.healthStatus);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: statusColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: statusColor.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '标记点 ID: ${marker.nodeId}',
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  _getHealthStatusName(marker.healthStatus),
+                  style: const TextStyle(color: Colors.white, fontSize: 11),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '位置: (${marker.nodeLogicLocation.localX.toDouble().toStringAsFixed(2)}, ${marker.nodeLogicLocation.localY.toDouble().toStringAsFixed(2)})',
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+          ),
+          if (marker.deviation.diffX != 0 || marker.deviation.diffY != 0)
+            Text(
+              '偏差: X=${marker.deviation.diffX.toDouble().toStringAsFixed(2)}mm, Y=${marker.deviation.diffY.toDouble().toStringAsFixed(2)}mm',
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGroundDetail(pb.GroundHealthInfo ground) {
+    final statusColor = _getStatusColor(ground.healthStatus);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: statusColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: statusColor.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '路径: (${ground.startNode.localX.toInt()},${ground.startNode.localY.toInt()}) → (${ground.endNode.localX.toInt()},${ground.endNode.localY.toInt()})',
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  _getHealthStatusName(ground.healthStatus),
+                  style: const TextStyle(color: Colors.white, fontSize: 11),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '平整度: ${ground.floorFlatness.toStringAsFixed(3)}',
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+          ),
+          Text(
+            '最大偏差: ${ground.maxDeviation.toStringAsFixed(2)}mm',
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getMarkerIssueTypeName(MarkerIssueType type) {
+    switch (type) {
+      case MarkerIssueType.MARKER_ISSUE_DAMAGED:
+        return '二维码污损';
+      case MarkerIssueType.MARKER_ISSUE_MISALIGNED:
+        return '二维码间距不对';
+      case MarkerIssueType.MARKER_ISSUE_ANGLE_DEVIATION:
+        return '二维码角度不准';
+      case MarkerIssueType.MARKER_ISSUE_WRONG_CODE:
+        return '二维码贴错';
+      default:
+        return '未知异常';
+    }
+  }
+
+  String _getGroundIssueTypeName(GroundIssueType type) {
+    switch (type) {
+      case GroundIssueType.GROUND_ISSUE_UNEVEN:
+        return '地面不平';
+      case GroundIssueType.GROUND_ISSUE_OBSTACLE:
+        return '地面障碍';
+      case GroundIssueType.GROUND_ISSUE_SLOPE:
+        return '地面坡度异常';
+      default:
+        return '未知异常';
+    }
+  }
+
+  String _getHealthStatusName(HealthStatus status) {
+    switch (status) {
+      case HealthStatus.HEALTH_STATUS_CRITICAL:
+        return '严重';
+      case HealthStatus.HEALTH_STATUS_ERROR:
+        return '错误';
+      case HealthStatus.HEALTH_STATUS_WARNING:
+        return '警告';
+      case HealthStatus.HEALTH_STATUS_NORMAL:
+        return '正常';
+      default:
+        return '未知';
+    }
+  }
+
+  Color _getStatusColor(HealthStatus status) {
+    switch (status) {
+      case HealthStatus.HEALTH_STATUS_CRITICAL:
+      case HealthStatus.HEALTH_STATUS_ERROR:
+        return Colors.red;
+      case HealthStatus.HEALTH_STATUS_WARNING:
+        return Colors.orange;
+      case HealthStatus.HEALTH_STATUS_NORMAL:
+        return Colors.green;
+      default:
+        return Colors.grey;
+    }
   }
 
   Widget _buildRecentAlerts() {
@@ -484,18 +905,25 @@ class _OverviewPageState extends State<OverviewPage> {
                   children: [
                     Text(
                       '实时异常警报',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     SizedBox(width: 8),
-                    Icon(Icons.fiber_manual_record, color: Colors.red, size: 12),
+                    Icon(
+                      Icons.fiber_manual_record,
+                      color: Colors.red,
+                      size: 12,
+                    ),
                     SizedBox(width: 4),
-                    Text('LIVE', style: TextStyle(color: Colors.red, fontSize: 10)),
+                    Text(
+                      'LIVE',
+                      style: TextStyle(color: Colors.red, fontSize: 10),
+                    ),
                   ],
                 ),
-                TextButton(
-                  onPressed: () {},
-                  child: const Text('查看全部'),
-                ),
+                TextButton(onPressed: () {}, child: const Text('查看全部')),
               ],
             ),
             const SizedBox(height: 8),
@@ -510,7 +938,7 @@ class _OverviewPageState extends State<OverviewPage> {
                     ),
                   );
                 }
-                
+
                 return _AlertItem(alert: snapshot.data!);
               },
             ),
@@ -555,15 +983,24 @@ class _MetricCard extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(fontSize: 14, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
                       ),
                       Text(
                         value,
-                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       Text(
                         subtitle,
-                        style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
                       ),
                     ],
                   ),
@@ -650,7 +1087,9 @@ class _AlertItem extends StatelessWidget {
 
 // ===================== 二维码异常分析页面 =====================
 class QRCodeAnalysisPage extends StatefulWidget {
-  const QRCodeAnalysisPage({super.key});
+  final SiteHealthRealGrpcService grpcService;
+
+  const QRCodeAnalysisPage({super.key, required this.grpcService});
 
   @override
   State<QRCodeAnalysisPage> createState() => _QRCodeAnalysisPageState();
@@ -669,111 +1108,367 @@ class _QRCodeAnalysisPageState extends State<QRCodeAnalysisPage> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
-                const Text('异常类型: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                const Text(
+                  '异常类型: ',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(width: 12),
-                ...['全部', '间距不准', '角度偏差', '污损脏污', '贴错位置', '未识别', '格式无效']
-                    .map((type) => Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: FilterChip(
-                            label: Text(type),
-                            selected: _selectedType == type,
-                            onSelected: (selected) {
-                              setState(() {
-                                _selectedType = type;
-                              });
-                            },
-                          ),
-                        ))
+                ...['全部', '二维码污损', '二维码间距不对', '二维码角度不准', '二维码贴错']
+                    .map(
+                      (type) => Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: FilterChip(
+                          label: Text(type),
+                          selected: _selectedType == type,
+                          onSelected: (selected) {
+                            setState(() {
+                              _selectedType = type;
+                            });
+                          },
+                        ),
+                      ),
+                    )
                     .toList(),
               ],
             ),
           ),
         ),
         Expanded(
-          child: ListView(
-            children: const [
-              QRCodeExceptionCard(),
-              QRCodeExceptionCard(),
-              QRCodeExceptionCard(),
-              QRCodeExceptionCard(),
-            ],
-          ),
+          child: !widget.grpcService.isConnected
+              ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.cloud_off, size: 64, color: Colors.grey),
+                      SizedBox(height: 16),
+                      Text('未连接到服务器'),
+                    ],
+                  ),
+                )
+              : FutureBuilder(
+                  future: widget.grpcService.queryHealthInfo(
+                    minStatus: pb.HealthStatus.HEALTH_STATUS_WARNING,
+                  ),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.error,
+                              size: 64,
+                              color: Colors.red,
+                            ),
+                            const SizedBox(height: 16),
+                            Text('错误: ${snapshot.error}'),
+                          ],
+                        ),
+                      );
+                    }
+
+                    if (!snapshot.hasData) {
+                      return const Center(child: Text('暂无数据'));
+                    }
+
+                    final response = snapshot.data!;
+                    var markerHealths = response.markerHealths;
+
+                    // 根据选择的类型过滤
+                    if (_selectedType != '全部') {
+                      markerHealths = markerHealths.where((marker) {
+                        switch (_selectedType) {
+                          case '二维码污损':
+                            return marker.issueType ==
+                                pb.MarkerIssueType.MARKER_ISSUE_DAMAGED;
+                          case '二维码间距不对':
+                            return marker.issueType ==
+                                pb.MarkerIssueType.MARKER_ISSUE_MISALIGNED;
+                          case '二维码角度不准':
+                            return marker.issueType ==
+                                pb.MarkerIssueType.MARKER_ISSUE_ANGLE_DEVIATION;
+                          case '二维码贴错':
+                            return marker.issueType ==
+                                pb.MarkerIssueType.MARKER_ISSUE_WRONG_CODE;
+                          default:
+                            return true;
+                        }
+                      }).toList();
+                    }
+
+                    if (markerHealths.isEmpty) {
+                      return const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              size: 64,
+                              color: Colors.green,
+                            ),
+                            SizedBox(height: 16),
+                            Text('没有二维码异常'),
+                          ],
+                        ),
+                      );
+                    }
+
+                    // 按严重程度排序：CRITICAL > ERROR > WARNING
+                    final sortedMarkers = markerHealths.toList();
+                    sortedMarkers.sort((a, b) {
+                      final statusPriority = {
+                        pb.HealthStatus.HEALTH_STATUS_CRITICAL: 4,
+                        pb.HealthStatus.HEALTH_STATUS_ERROR: 3,
+                        pb.HealthStatus.HEALTH_STATUS_WARNING: 2,
+                        pb.HealthStatus.HEALTH_STATUS_NORMAL: 1,
+                        pb.HealthStatus.HEALTH_STATUS_UNKNOWN: 0,
+                      };
+                      final priorityA = statusPriority[a.healthStatus] ?? 0;
+                      final priorityB = statusPriority[b.healthStatus] ?? 0;
+                      return priorityB.compareTo(priorityA); // 降序排列
+                    });
+
+                    return ListView.builder(
+                      itemCount: sortedMarkers.length,
+                      itemBuilder: (context, index) {
+                        return QRCodeExceptionCard(
+                          marker: sortedMarkers[index],
+                        );
+                      },
+                    );
+                  },
+                ),
         ),
       ],
     );
   }
 }
 
-class QRCodeExceptionCard extends StatelessWidget {
-  const QRCodeExceptionCard({super.key});
+class QRCodeExceptionCard extends StatefulWidget {
+  final pb.MarkerHealthInfo marker;
+
+  const QRCodeExceptionCard({super.key, required this.marker});
+
+  @override
+  State<QRCodeExceptionCard> createState() => _QRCodeExceptionCardState();
+}
+
+class _QRCodeExceptionCardState extends State<QRCodeExceptionCard> {
+  bool _isExpanded = false; // 默认折叠
+
+  String _getIssueTypeName() {
+    switch (widget.marker.issueType) {
+      case pb.MarkerIssueType.MARKER_ISSUE_DAMAGED:
+        return '二维码污损';
+      case pb.MarkerIssueType.MARKER_ISSUE_MISALIGNED:
+        return '二维码间距不对';
+      case pb.MarkerIssueType.MARKER_ISSUE_ANGLE_DEVIATION:
+        return '二维码角度不准';
+      case pb.MarkerIssueType.MARKER_ISSUE_WRONG_CODE:
+        return '二维码贴错';
+      default:
+        return '未知异常';
+    }
+  }
+
+  Color _getStatusColor() {
+    switch (widget.marker.healthStatus) {
+      case pb.HealthStatus.HEALTH_STATUS_CRITICAL:
+        return Colors.red;
+      case pb.HealthStatus.HEALTH_STATUS_ERROR:
+        return Colors.orange;
+      case pb.HealthStatus.HEALTH_STATUS_WARNING:
+        return Colors.yellow.shade700;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _getHealthStatusName() {
+    switch (widget.marker.healthStatus) {
+      case pb.HealthStatus.HEALTH_STATUS_CRITICAL:
+        return '严重';
+      case pb.HealthStatus.HEALTH_STATUS_ERROR:
+        return '错误';
+      case pb.HealthStatus.HEALTH_STATUS_WARNING:
+        return '警告';
+      case pb.HealthStatus.HEALTH_STATUS_NORMAL:
+        return '正常';
+      default:
+        return '未知';
+    }
+  }
+
+  String _formatTimestamp() {
+    final dt = DateTime.fromMillisecondsSinceEpoch(
+      widget.marker.timestamp.seconds.toInt() * 1000 +
+          widget.marker.timestamp.nanos ~/ 1000000,
+    );
+    return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} '
+        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:${dt.second.toString().padLeft(2, '0')}';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final statusColor = _getStatusColor();
+    final issueTypeName = _getIssueTypeName();
+    final healthStatusName = _getHealthStatusName();
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('站点: S-08', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                    Text('二维码ID: MRK_2024_08_001', style: TextStyle(color: Colors.grey)),
-                  ],
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade100,
-                    borderRadius: BorderRadius.circular(20),
+      child: Column(
+        children: [
+          // 标题栏（始终显示）
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  // 严重程度图标
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      widget.marker.healthStatus ==
+                              pb.HealthStatus.HEALTH_STATUS_CRITICAL
+                          ? Icons.error
+                          : widget.marker.healthStatus ==
+                                pb.HealthStatus.HEALTH_STATUS_ERROR
+                          ? Icons.warning
+                          : Icons.info,
+                      color: statusColor,
+                      size: 24,
+                    ),
                   ),
-                  child: const Text('污损脏污', style: TextStyle(color: Colors.orange)),
-                ),
-              ],
+                  const SizedBox(width: 12),
+                  // 主要信息
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              '节点: ${widget.marker.nodeId}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: statusColor,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                healthStatusName,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                issueTypeName,
+                                style: TextStyle(
+                                  color: Colors.grey.shade700,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            if (widget.marker.hasNodeLogicLocation())
+                              Text(
+                                '位置: (${widget.marker.nodeLogicLocation.localX}, ${widget.marker.nodeLogicLocation.localY})',
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 12,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  // 展开/折叠图标
+                  Icon(
+                    _isExpanded ? Icons.expand_less : Icons.expand_more,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            const Text('异常详情:', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            _buildInfoTable(),
-            const SizedBox(height: 16),
-            const Text('多车验证数据:', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _buildVehicleChip('AGV-01', '15次'),
-                _buildVehicleChip('AGV-03', '8次'),
-                _buildVehicleChip('AGV-05', '12次'),
-                _buildVehicleChip('AGV-07', '9次'),
-              ],
+          ),
+          // 详情部分（可折叠）
+          if (_isExpanded)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  const Text(
+                    '异常详情:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildInfoTable(),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton.icon(
+                        onPressed: () {},
+                        icon: const Icon(Icons.construction),
+                        label: const Text('维修工单'),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          _showDataCorrectionDialog(context);
+                        },
+                        icon: const Icon(Icons.auto_fix_high),
+                        label: const Text('数据修正'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.construction),
-                  label: const Text('维修工单'),
-                ),
-                const SizedBox(width: 8),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    _showDataCorrectionDialog(context);
-                  },
-                  icon: const Icon(Icons.auto_fix_high),
-                  label: const Text('数据修正'),
-                ),
-              ],
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -781,13 +1476,27 @@ class QRCodeExceptionCard extends StatelessWidget {
   Widget _buildInfoTable() {
     return Column(
       children: [
-        _buildTableRow('异常类型', 'kFalseResultMightBeDamagedOrDirty'),
-        _buildTableRow('首次报告时间', '2024-01-15 10:30:45'),
-        _buildTableRow('最近报告时间', '2024-01-15 14:22:18'),
-        _buildTableRow('报告次数', '24次'),
-        _buildTableRow('涉及车辆', 'AGV-01, AGV-03, AGV-05, AGV-07'),
-        _buildTableRow('平均角度差', '2.3° (阈值: 1.5°~6°)'),
-        _buildTableRow('平均距离差', '8mm (阈值: 5mm)'),
+        _buildTableRow(
+          '车辆ID',
+          'AGV-${widget.marker.carId.toString().padLeft(2, '0')}',
+        ),
+        _buildTableRow('异常类型代码', widget.marker.exceptionType),
+        _buildTableRow('检测到的二维码', widget.marker.detectedMarkerCode),
+        _buildTableRow(
+          '解码成功率',
+          '${(widget.marker.decodeSuccessRate * 100).toStringAsFixed(1)}%',
+        ),
+        _buildTableRow('检测时间', _formatTimestamp()),
+        if (widget.marker.description.isNotEmpty)
+          _buildTableRow('描述', widget.marker.description),
+        if (widget.marker.hasDeviation()) ...[
+          _buildTableRow(
+            '角度偏差',
+            '${widget.marker.deviation.rotate.toStringAsFixed(2)}°',
+          ),
+          _buildTableRow('横向偏差', '${widget.marker.deviation.diffX}mm'),
+          _buildTableRow('纵向偏差', '${widget.marker.deviation.diffY}mm'),
+        ],
       ],
     );
   }
@@ -805,16 +1514,6 @@ class QRCodeExceptionCard extends StatelessWidget {
           Expanded(child: Text(value)),
         ],
       ),
-    );
-  }
-
-  Widget _buildVehicleChip(String vehicle, String count) {
-    return Chip(
-      avatar: CircleAvatar(
-        backgroundColor: Colors.blue.shade100,
-        child: const Icon(Icons.directions_car, size: 16),
-      ),
-      label: Text('$vehicle ($count)'),
     );
   }
 
@@ -862,7 +1561,9 @@ class QRCodeExceptionCard extends StatelessWidget {
 
 // ===================== 地面异常分析页面 =====================
 class GroundAnalysisPage extends StatefulWidget {
-  const GroundAnalysisPage({super.key});
+  final SiteHealthRealGrpcService grpcService;
+
+  const GroundAnalysisPage({super.key, required this.grpcService});
 
   @override
   State<GroundAnalysisPage> createState() => _GroundAnalysisPageState();
@@ -887,7 +1588,10 @@ class _GroundAnalysisPageState extends State<GroundAnalysisPage> {
                   children: [
                     const Text(
                       '地面检测参数配置',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     IconButton(
                       onPressed: () {
@@ -895,7 +1599,9 @@ class _GroundAnalysisPageState extends State<GroundAnalysisPage> {
                           _showParams = !_showParams;
                         });
                       },
-                      icon: Icon(_showParams ? Icons.expand_less : Icons.expand_more),
+                      icon: Icon(
+                        _showParams ? Icons.expand_less : Icons.expand_more,
+                      ),
                     ),
                   ],
                 ),
@@ -908,12 +1614,92 @@ class _GroundAnalysisPageState extends State<GroundAnalysisPage> {
           ),
         ),
         Expanded(
-          child: ListView(
-            children: const [
-              GroundExceptionCard(),
-              GroundExceptionCard(),
-            ],
-          ),
+          child: !widget.grpcService.isConnected
+              ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.cloud_off, size: 64, color: Colors.grey),
+                      SizedBox(height: 16),
+                      Text('未连接到服务器'),
+                    ],
+                  ),
+                )
+              : FutureBuilder(
+                  future: widget.grpcService.queryHealthInfo(
+                    minStatus: pb.HealthStatus.HEALTH_STATUS_WARNING,
+                  ),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (snapshot.hasError) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.error,
+                              size: 64,
+                              color: Colors.red,
+                            ),
+                            const SizedBox(height: 16),
+                            Text('错误: ${snapshot.error}'),
+                          ],
+                        ),
+                      );
+                    }
+
+                    if (!snapshot.hasData) {
+                      return const Center(child: Text('暂无数据'));
+                    }
+
+                    final response = snapshot.data!;
+                    final groundHealths = response.groundHealths;
+
+                    if (groundHealths.isEmpty) {
+                      return const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              size: 64,
+                              color: Colors.green,
+                            ),
+                            SizedBox(height: 16),
+                            Text('没有地面异常'),
+                          ],
+                        ),
+                      );
+                    }
+
+                    // 按严重程度排序：CRITICAL > ERROR > WARNING
+                    final sortedGrounds = groundHealths.toList();
+                    sortedGrounds.sort((a, b) {
+                      final statusPriority = {
+                        pb.HealthStatus.HEALTH_STATUS_CRITICAL: 4,
+                        pb.HealthStatus.HEALTH_STATUS_ERROR: 3,
+                        pb.HealthStatus.HEALTH_STATUS_WARNING: 2,
+                        pb.HealthStatus.HEALTH_STATUS_NORMAL: 1,
+                        pb.HealthStatus.HEALTH_STATUS_UNKNOWN: 0,
+                      };
+                      final priorityA = statusPriority[a.healthStatus] ?? 0;
+                      final priorityB = statusPriority[b.healthStatus] ?? 0;
+                      return priorityB.compareTo(priorityA); // 降序排列
+                    });
+
+                    return ListView.builder(
+                      itemCount: sortedGrounds.length,
+                      itemBuilder: (context, index) {
+                        return GroundExceptionCard(
+                          ground: sortedGrounds[index],
+                        );
+                      },
+                    );
+                  },
+                ),
         ),
       ],
     );
@@ -949,7 +1735,10 @@ class _GroundAnalysisPageState extends State<GroundAnalysisPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                Text(description, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                Text(
+                  description,
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+                ),
               ],
             ),
           ),
@@ -960,91 +1749,267 @@ class _GroundAnalysisPageState extends State<GroundAnalysisPage> {
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: Colors.blue.shade100),
             ),
-            child: Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
-    ));
+      ),
+    );
   }
 }
 
-class GroundExceptionCard extends StatelessWidget {
-  const GroundExceptionCard({super.key});
+class GroundExceptionCard extends StatefulWidget {
+  final pb.GroundHealthInfo ground;
+
+  const GroundExceptionCard({super.key, required this.ground});
+
+  @override
+  State<GroundExceptionCard> createState() => _GroundExceptionCardState();
+}
+
+class _GroundExceptionCardState extends State<GroundExceptionCard> {
+  bool _isExpanded = false; // 默认折叠
+
+  String _getIssueTypeName() {
+    switch (widget.ground.issueType) {
+      case pb.GroundIssueType.GROUND_ISSUE_UNEVEN:
+        return '地面不平';
+      case pb.GroundIssueType.GROUND_ISSUE_OBSTACLE:
+        return '有障碍物';
+      case pb.GroundIssueType.GROUND_ISSUE_SLOPE:
+        return '有坡度';
+      default:
+        return '地面异常';
+    }
+  }
+
+  Color _getStatusColor() {
+    switch (widget.ground.healthStatus) {
+      case pb.HealthStatus.HEALTH_STATUS_CRITICAL:
+        return Colors.red;
+      case pb.HealthStatus.HEALTH_STATUS_ERROR:
+        return Colors.orange;
+      case pb.HealthStatus.HEALTH_STATUS_WARNING:
+        return Colors.yellow.shade700;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _getHealthStatusName() {
+    switch (widget.ground.healthStatus) {
+      case pb.HealthStatus.HEALTH_STATUS_CRITICAL:
+        return '严重';
+      case pb.HealthStatus.HEALTH_STATUS_ERROR:
+        return '错误';
+      case pb.HealthStatus.HEALTH_STATUS_WARNING:
+        return '警告';
+      case pb.HealthStatus.HEALTH_STATUS_NORMAL:
+        return '正常';
+      default:
+        return '未知';
+    }
+  }
+
+  String _formatTimestamp() {
+    final dt = DateTime.fromMillisecondsSinceEpoch(
+      widget.ground.timestamp.seconds.toInt() * 1000 +
+          widget.ground.timestamp.nanos ~/ 1000000,
+    );
+    return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} '
+        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:${dt.second.toString().padLeft(2, '0')}';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final statusColor = _getStatusColor();
+    final issueTypeName = _getIssueTypeName();
+    final healthStatusName = _getHealthStatusName();
+
     return Card(
-      margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text('路径: P-12', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Chip(
-                  label: Text('地面不平', style: TextStyle(color: Colors.white)),
-                  backgroundColor: Colors.red,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            const Text('位置描述: 从站点S-08到S-09的转弯处 (kUnderpanExceptionalVibration)'),
-            const SizedBox(height: 12),
-            const Text('多车验证数据:', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            _buildVehicleDataTable(),
-            const SizedBox(height: 16),
-            const Text('云端判断逻辑:', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade300),
-              ),
-              child: const Text(
-                '同一路径上，多车上报 kUnderpanExceptionalVibration 异常。'
-                '排除车辆个体故障后，判断该路段地面存在坑洼、接缝不平或异常凸起。',
-                style: TextStyle(fontSize: 14),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      _showMaintenanceDialog(context);
-                    },
-                    icon: const Icon(Icons.construction),
-                    label: const Text('创建维修工单'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        children: [
+          // 标题栏（始终显示）
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isExpanded = !_isExpanded;
+              });
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  // 严重程度图标
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      widget.ground.healthStatus ==
+                              pb.HealthStatus.HEALTH_STATUS_CRITICAL
+                          ? Icons.error
+                          : widget.ground.healthStatus ==
+                                pb.HealthStatus.HEALTH_STATUS_ERROR
+                          ? Icons.warning
+                          : Icons.info,
+                      color: statusColor,
+                      size: 24,
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      _showVibrationDetails(context);
-                    },
-                    icon: const Icon(Icons.analytics),
-                    label: const Text('振动分析'),
+                  const SizedBox(width: 12),
+                  // 主要信息
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                '路径: ${widget.ground.hasStartNode() ? "(${widget.ground.startNode.localX},${widget.ground.startNode.localY})" : ""}'
+                                '${widget.ground.hasEndNode() ? " → (${widget.ground.endNode.localX},${widget.ground.endNode.localY})" : ""}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: statusColor,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                healthStatusName,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                issueTypeName,
+                                style: TextStyle(
+                                  color: Colors.grey.shade700,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'AGV-${widget.ground.carId.toString().padLeft(2, '0')}',
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  // 展开/折叠图标
+                  Icon(
+                    _isExpanded ? Icons.expand_less : Icons.expand_more,
+                    color: Colors.grey,
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
+          ),
+          // 详情部分（可折叠）
+          if (_isExpanded)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  if (widget.ground.description.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Text(
+                        widget.ground.description,
+                        style: TextStyle(color: Colors.grey.shade700),
+                      ),
+                    ),
+                  const Text(
+                    '地面检测数据:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildGroundDataTable(),
+                  const SizedBox(height: 16),
+                  const Text(
+                    '检测时间:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(_formatTimestamp()),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            _showMaintenanceDialog(context);
+                          },
+                          icon: const Icon(Icons.construction),
+                          label: const Text('创建维修工单'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.orange,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            _showVibrationDetails(context);
+                          },
+                          icon: const Icon(Icons.analytics),
+                          label: const Text('振动分析'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
     );
   }
 
-  Widget _buildVehicleDataTable() {
+  Widget _buildGroundDataTable() {
     return Table(
       border: TableBorder.all(color: Colors.grey.shade300),
       children: [
@@ -1053,62 +2018,47 @@ class GroundExceptionCard extends StatelessWidget {
           children: const [
             Padding(
               padding: EdgeInsets.all(8),
-              child: Text('车辆编号', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text('指标', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             Padding(
               padding: EdgeInsets.all(8),
-              child: Text('振动等级', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text('数值', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
             Padding(
               padding: EdgeInsets.all(8),
-              child: Text('报告次数', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-            Padding(
-              padding: EdgeInsets.all(8),
-              child: Text('最后报告', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text('单位', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
-        _buildTableRow('AGV-03', '高', '15次', '14:32', Colors.red),
-        _buildTableRow('AGV-07', '中', '8次', '13:45', Colors.orange),
-        _buildTableRow('AGV-11', '高', '12次', '14:15', Colors.red),
-        _buildTableRow('AGV-02', '低', '3次', '11:20', Colors.blue),
-      ],
-    );
-  }
-
-  TableRow _buildTableRow(String vehicle, String level, String count, String time, Color color) {
-    return TableRow(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: Row(
-            children: [
-              const Icon(Icons.directions_car, size: 16),
-              const SizedBox(width: 8),
-              Text(vehicle),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color),
+        TableRow(
+          children: [
+            const Padding(padding: EdgeInsets.all(8), child: Text('地面平整度')),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(widget.ground.floorFlatness.toStringAsFixed(3)),
             ),
-            child: Text(level, style: TextStyle(color: color)),
-          ),
+            const Padding(padding: EdgeInsets.all(8), child: Text('-')),
+          ],
         ),
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: Text(count),
+        TableRow(
+          children: [
+            const Padding(padding: EdgeInsets.all(8), child: Text('最大偏差')),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(widget.ground.maxDeviation.toStringAsFixed(2)),
+            ),
+            const Padding(padding: EdgeInsets.all(8), child: Text('mm')),
+          ],
         ),
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: Text(time),
+        TableRow(
+          children: [
+            const Padding(padding: EdgeInsets.all(8), child: Text('平均偏差')),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(widget.ground.averageDeviation.toStringAsFixed(2)),
+            ),
+            const Padding(padding: EdgeInsets.all(8), child: Text('mm')),
+          ],
         ),
       ],
     );
@@ -1163,7 +2113,10 @@ class GroundExceptionCard extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('振动数据分析', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text(
+              '振动数据分析',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
             Container(
               height: 200,
@@ -1209,7 +2162,10 @@ class GroundExceptionCard extends StatelessWidget {
             ),
             Padding(
               padding: EdgeInsets.all(8),
-              child: Text('持续时间', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: Text(
+                '持续时间',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -1223,18 +2179,9 @@ class GroundExceptionCard extends StatelessWidget {
   TableRow _buildVibrationRow(String time, String amplitude, String duration) {
     return TableRow(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: Text(time),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: Text(amplitude),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: Text(duration),
-        ),
+        Padding(padding: const EdgeInsets.all(8), child: Text(time)),
+        Padding(padding: const EdgeInsets.all(8), child: Text(amplitude)),
+        Padding(padding: const EdgeInsets.all(8), child: Text(duration)),
       ],
     );
   }
@@ -1242,8 +2189,8 @@ class GroundExceptionCard extends StatelessWidget {
 
 // ===================== 车辆状态页面 =====================
 class VehicleStatusPage extends StatefulWidget {
-  final SiteHealthGrpcService grpcService;
-  
+  final SiteHealthRealGrpcService grpcService;
+
   const VehicleStatusPage({super.key, required this.grpcService});
 
   @override
@@ -1255,7 +2202,6 @@ class _VehicleStatusPageState extends State<VehicleStatusPage> {
 
   @override
   Widget build(BuildContext context) {
-
     return Column(
       children: [
         Padding(
@@ -1310,7 +2256,7 @@ class _VehicleStatusPageState extends State<VehicleStatusPage> {
               if (!snapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
               }
-              
+
               final vehicles = snapshot.data!;
               final filteredVehicles = vehicles.where((vehicle) {
                 if (_filter == '全部') return true;
@@ -1318,10 +2264,11 @@ class _VehicleStatusPageState extends State<VehicleStatusPage> {
                 if (_filter == '异常') return vehicle.status == '异常';
                 return vehicle.status == '警告';
               }).toList();
-              
+
               return ListView.builder(
                 itemCount: filteredVehicles.length,
-                itemBuilder: (context, index) => _buildVehicleCard(filteredVehicles[index]),
+                itemBuilder: (context, index) =>
+                    _buildVehicleCard(filteredVehicles[index]),
               );
             },
           ),
@@ -1348,10 +2295,7 @@ class _VehicleStatusPageState extends State<VehicleStatusPage> {
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: statusColor.withOpacity(0.2),
-          child: Icon(
-            _getStatusIcon(vehicle.status),
-            color: statusColor,
-          ),
+          child: Icon(_getStatusIcon(vehicle.status), color: statusColor),
         ),
         title: Text(
           vehicle.id,
@@ -1370,8 +2314,8 @@ class _VehicleStatusPageState extends State<VehicleStatusPage> {
                 vehicle.healthScore > 80
                     ? Colors.green
                     : vehicle.healthScore > 60
-                        ? Colors.orange
-                        : Colors.red,
+                    ? Colors.orange
+                    : Colors.red,
               ),
             ),
             Row(
@@ -1385,7 +2329,7 @@ class _VehicleStatusPageState extends State<VehicleStatusPage> {
               const SizedBox(height: 4),
               Text(
                 '异常: ${vehicle.exception}',
-                style: TextStyle(color: Colors.red, fontSize: 12),
+                style: const TextStyle(color: Colors.red, fontSize: 12),
               ),
             ],
           ],
@@ -1436,7 +2380,10 @@ class VehicleDetailSheet extends StatelessWidget {
             children: [
               Text(
                 vehicle.id,
-                style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               IconButton(
                 onPressed: () => Navigator.pop(context),
@@ -1470,8 +2417,18 @@ class VehicleDetailSheet extends StatelessWidget {
             child: ListView(
               shrinkWrap: true,
               children: [
-                _buildExceptionItem('kUnderpanExceptionalVibration', '地面不平', '路径P-12', '14:32'),
-                _buildExceptionItem('kFalseResultMightBeDamagedOrDirty', '二维码污损', '站点S-08', '13:45'),
+                _buildExceptionItem(
+                  'kUnderpanExceptionalVibration',
+                  '地面不平',
+                  '路径P-12',
+                  '14:32',
+                ),
+                _buildExceptionItem(
+                  'kFalseResultMightBeDamagedOrDirty',
+                  '二维码污损',
+                  '站点S-08',
+                  '13:45',
+                ),
                 _buildExceptionItem('kWrongLocation', '间距不准', '走廊C区', '11:20'),
               ],
             ),
@@ -1514,7 +2471,12 @@ class VehicleDetailSheet extends StatelessWidget {
     );
   }
 
-  Widget _buildExceptionItem(String code, String type, String location, String time) {
+  Widget _buildExceptionItem(
+    String code,
+    String type,
+    String location,
+    String time,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
@@ -1531,7 +2493,10 @@ class VehicleDetailSheet extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(code, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text(
+                  code,
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
                 Text(type, style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text('位置: $location'),
               ],
@@ -1567,19 +2532,32 @@ class _ReportsPageState extends State<ReportsPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('生成报告', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                const Text(
+                  '生成报告',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 16),
-                _buildDropdown('报告类型', _reportType, ['日报', '周报', '月报', '专项报告'], (value) {
-                  setState(() {
-                    _reportType = value!;
-                  });
-                }),
+                _buildDropdown(
+                  '报告类型',
+                  _reportType,
+                  ['日报', '周报', '月报', '专项报告'],
+                  (value) {
+                    setState(() {
+                      _reportType = value!;
+                    });
+                  },
+                ),
                 const SizedBox(height: 16),
-                _buildDropdown('时间范围', _timeRange, ['今日', '最近7天', '本月', '自定义'], (value) {
-                  setState(() {
-                    _timeRange = value!;
-                  });
-                }),
+                _buildDropdown(
+                  '时间范围',
+                  _timeRange,
+                  ['今日', '最近7天', '本月', '自定义'],
+                  (value) {
+                    setState(() {
+                      _timeRange = value!;
+                    });
+                  },
+                ),
                 const SizedBox(height: 24),
                 ElevatedButton.icon(
                   onPressed: _generateReport,
@@ -1596,20 +2574,19 @@ class _ReportsPageState extends State<ReportsPage> {
         const Divider(),
         const Expanded(
           child: SingleChildScrollView(
-            child: Column(
-              children: [
-                ReportCard(),
-                ReportCard(),
-                ReportCard(),
-              ],
-            ),
+            child: Column(children: [ReportCard(), ReportCard(), ReportCard()]),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildDropdown(String label, String value, List<String> items, ValueChanged<String?> onChanged) {
+  Widget _buildDropdown(
+    String label,
+    String value,
+    List<String> items,
+    ValueChanged<String?> onChanged,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1618,16 +2595,11 @@ class _ReportsPageState extends State<ReportsPage> {
         DropdownButtonFormField<String>(
           value: value,
           items: items.map((item) {
-            return DropdownMenuItem(
-              value: item,
-              child: Text(item),
-            );
+            return DropdownMenuItem(value: item, child: Text(item));
           }).toList(),
           onChanged: onChanged,
           decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
       ],
@@ -1662,10 +2634,7 @@ class _ReportsPageState extends State<ReportsPage> {
         SnackBar(
           content: Text('《$_reportType - $_timeRange》报告生成完成'),
           duration: const Duration(seconds: 2),
-          action: SnackBarAction(
-            label: '查看',
-            onPressed: () {},
-          ),
+          action: SnackBarAction(label: '查看', onPressed: () {}),
         ),
       );
     });
@@ -1690,12 +2659,21 @@ class ReportCard extends StatelessWidget {
                 const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('场地健康周报', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(
+                      '场地健康周报',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     Text('2024-01-08 ~ 2024-01-14'),
                   ],
                 ),
                 Chip(
-                  label: const Text('已完成', style: TextStyle(color: Colors.white)),
+                  label: const Text(
+                    '已完成',
+                    style: TextStyle(color: Colors.white),
+                  ),
                   backgroundColor: Colors.green,
                 ),
               ],
