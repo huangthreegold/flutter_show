@@ -1,3 +1,7 @@
+// Protocol Buffer 定义文件 - 通过 tonic-build 自动生成 Rust 代码
+// 修改此文件后需要重新执行 cargo build 以生成新的 Rust 代码
+// 不应直接修改生成的 Rust 代码，改为修改本 proto 文件后重新编译
+
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
@@ -12,27 +16,27 @@ package galaxis.site.health;
 // 健康状态枚举
 enum HealthStatus {
   HEALTH_STATUS_UNKNOWN = 0;
-  HEALTH_STATUS_NORMAL = 1;      // 正常
-  HEALTH_STATUS_WARNING = 2;     // 警告
-  HEALTH_STATUS_ERROR = 3;       // 错误
-  HEALTH_STATUS_CRITICAL = 4;    // 严重
+  HEALTH_STATUS_NORMAL = 1;    // 正常
+  HEALTH_STATUS_WARNING = 2;   // 警告
+  HEALTH_STATUS_ERROR = 3;     // 错误
+  HEALTH_STATUS_CRITICAL = 4;  // 严重
 }
 
 // 二维码问题类型
 enum MarkerIssueType {
   MARKER_ISSUE_NONE = 0;
-  MARKER_ISSUE_DAMAGED = 1;         // 二维码污损
-  MARKER_ISSUE_MISALIGNED = 2;      // 间距不准
-  MARKER_ISSUE_ANGLE_DEVIATION = 3; // 二维码角度不准
-  MARKER_ISSUE_WRONG_CODE = 4;      // 贴错
+  MARKER_ISSUE_DAMAGED = 1;          // 二维码污损
+  MARKER_ISSUE_MISALIGNED = 2;       // 间距不准
+  MARKER_ISSUE_ANGLE_DEVIATION = 3;  // 二维码角度不准
+  MARKER_ISSUE_WRONG_CODE = 4;       // 贴错
 }
 
 // 地面问题类型
 enum GroundIssueType {
   GROUND_ISSUE_NONE = 0;
-  GROUND_ISSUE_UNEVEN = 1;       // 不平整
-  GROUND_ISSUE_OBSTACLE = 2;     // 有障碍物
-  GROUND_ISSUE_SLOPE = 3;        // 有坡度
+  GROUND_ISSUE_UNEVEN = 1;    // 不平整
+  GROUND_ISSUE_OBSTACLE = 2;  // 有障碍物
+  GROUND_ISSUE_SLOPE = 3;     // 有坡度
 }
 
 // 货架问题类型
@@ -51,40 +55,40 @@ message MarkerHealthInfo {
   // 出现的异常类型（或历史上期望的二维码码值）。此处从语义上表示“异常类型/原因”，
   // 保持为 string 以兼容现有客户端；如需严格区分，可在后续 proto 版本中拆分字段。
   string exception_type = 4;
-  string detected_marker_code = 5;      // 检测到的二维码
-  double decode_success_rate = 6;         // 解码成功率 (0.0-1.0)
-  optional NodeDeviationData deviation = 7; // 位置偏差
-  MarkerIssueType issue_type = 8;       // 问题类型
-  HealthStatus health_status = 9;        // 健康状态
-  string description = 10;                // 问题描述
-  google.protobuf.Timestamp timestamp = 11; // 检测时间
+  string detected_marker_code = 5;           // 检测到的二维码
+  double decode_success_rate = 6;            // 解码成功率 (0.0-1.0)
+  optional NodeDeviationData deviation = 7;  // 位置偏差
+  MarkerIssueType issue_type = 8;            // 问题类型
+  HealthStatus health_status = 9;            // 健康状态
+  string description = 10;                   // 问题描述
+  google.protobuf.Timestamp timestamp = 11;  // 检测时间
 }
 
 // 地面健康信息
 message GroundHealthInfo {
   int64 car_id = 1;
-  optional PositionData_t start_node = 2;  // 起始节点
-  optional PositionData_t end_node = 3;    // 结束节点
-  double floor_flatness = 4;               // 平整度 (0.0-1.0, 1.0为完全平整)
-  double max_deviation = 5;                // 最大偏差 (毫米)
-  double average_deviation = 6;            // 平均偏差 (毫米)
-  GroundIssueType issue_type = 7;          // 问题类型
-  HealthStatus health_status = 8;           // 健康状态
-  string description = 9;                  // 问题描述
-  google.protobuf.Timestamp timestamp = 10; // 检测时间
+  optional PositionData_t start_node = 2;    // 起始节点
+  optional PositionData_t end_node = 3;      // 结束节点
+  double floor_flatness = 4;                 // 平整度 (0.0-1.0, 1.0为完全平整)
+  double max_deviation = 5;                  // 最大偏差 (毫米)
+  double average_deviation = 6;              // 平均偏差 (毫米)
+  GroundIssueType issue_type = 7;            // 问题类型
+  HealthStatus health_status = 8;            // 健康状态
+  string description = 9;                    // 问题描述
+  google.protobuf.Timestamp timestamp = 10;  // 检测时间
 }
 
 // 货架健康信息
 message GoodsSlotHealthInfo {
   int64 car_id = 1;
   int64 goods_slot_id = 2;
-  int64 expected_height = 3;              // 期望高度 (毫米)
-  int64 detected_height = 4;               // 检测高度 (毫米)
-  int64 height_difference = 5;             // 高度差 (毫米)
-  GoodsSlotIssueType issue_type = 6;       // 问题类型
-  HealthStatus health_status = 7;          // 健康状态
-  string description = 8;                  // 问题描述
-  google.protobuf.Timestamp timestamp = 9; // 检测时间
+  int64 expected_height = 3;                // 期望高度 (毫米)
+  int64 detected_height = 4;                // 检测高度 (毫米)
+  int64 height_difference = 5;              // 高度差 (毫米)
+  GoodsSlotIssueType issue_type = 6;        // 问题类型
+  HealthStatus health_status = 7;           // 健康状态
+  string description = 8;                   // 问题描述
+  google.protobuf.Timestamp timestamp = 9;  // 检测时间
   // 保留原有字段以兼容
   int64 goods_slot_direction = 10;
   int64 goods_slot_jack_height = 11;
@@ -115,11 +119,11 @@ message SiteHealthInfo {
 
 // 健康信息查询请求
 message HealthInfoQueryRequest {
-  optional int64 node_id = 1;              // 查询特定节点
-  optional PositionData_t logic_location = 2; // 查询特定逻辑位置
-  optional int64 goods_slot_id = 3;        // 查询特定货架
-  optional HealthStatus min_status = 4;    // 最低健康状态（过滤）
-  optional google.protobuf.Timestamp start_time = 5; // 开始时间
+  optional int64 node_id = 1;                         // 查询特定节点
+  optional PositionData_t logic_location = 2;         // 查询特定逻辑位置
+  optional int64 goods_slot_id = 3;                   // 查询特定货架
+  optional HealthStatus min_status = 4;               // 最低健康状态（过滤）
+  optional google.protobuf.Timestamp start_time = 5;  // 开始时间
   optional google.protobuf.Timestamp end_time = 6;    // 结束时间
 }
 
@@ -138,19 +142,19 @@ message HealthStatistics {
   int64 warning_nodes = 3;
   int64 error_nodes = 4;
   int64 critical_nodes = 5;
-  
+
   // 货架统计
   int64 total_goods_slots = 6;
   int64 normal_goods_slots = 7;
   int64 warning_goods_slots = 8;
   int64 error_goods_slots = 9;
-  
+
   // 综合健康分数
   double overall_health_score = 10;  // 整体健康分数 (0.0-1.0)
-  
+
   // 每台车当前的异常计数列表（参考顶层消息 CarExceptionSummary）
   repeated CarExceptionSummary per_car_exception_counts = 11;
-  
+
   // 地面区域统计
   int64 total_ground_areas = 12;
   int64 normal_ground_areas = 13;
@@ -168,122 +172,301 @@ message CarExceptionSummary {
 // 异常类型枚举
 enum ExceptionCategory {
   EXCEPTION_CATEGORY_UNKNOWN = 0;
-  EXCEPTION_CATEGORY_MARKER = 1;        // 二维码相关
-  EXCEPTION_CATEGORY_GROUND = 2;        // 地面相关
-  EXCEPTION_CATEGORY_GOODS_SLOT = 3;    // 货架相关
+  EXCEPTION_CATEGORY_MARKER = 1;      // 二维码相关
+  EXCEPTION_CATEGORY_GROUND = 2;      // 地面相关
+  EXCEPTION_CATEGORY_GOODS_SLOT = 3;  // 货架相关
 }
 
 // 位置异常概率分析请求
 message LocationExceptionAnalysisRequest {
-  int64 node_id = 1;                    // 位置节点ID（二维码）或货架ID
+  int64 node_id = 1;  // 位置节点ID（二维码）或货架ID
   PositionData_t logic_location = 2;
-  ExceptionCategory category = 3;        // 异常类别
-  optional google.protobuf.Timestamp start_time = 4; // 开始时间
-  optional google.protobuf.Timestamp end_time = 5;     // 结束时间
-  optional string marker_code = 6;       // 二维码码值（用于过滤换码后的数据）
+  ExceptionCategory category = 3;                     // 异常类别
+  optional google.protobuf.Timestamp start_time = 4;  // 开始时间
+  optional google.protobuf.Timestamp end_time = 5;    // 结束时间
+  optional string marker_code = 6;                    // 二维码码值（用于过滤换码后的数据）
 }
 
 // 位置异常概率分析响应
 message LocationExceptionAnalysisResponse {
   int64 node_id = 1;
   ExceptionCategory category = 2;
-  int64 total_detections = 3;           // 总检测次数
-  int64 exception_count = 4;             // 异常次数
-  double exception_rate = 5;             // 异常概率 (0.0-1.0)
-  int64 unique_car_count = 6;           // 出现异常的小车数量
-  int64 total_car_count = 7;            // 总小车数量
-  bool is_location_related = 8;         // 是否为场地问题（多车在同一位置异常）
-  repeated int64 affected_car_ids = 9;  // 受影响的小车ID列表
-  google.protobuf.Timestamp last_exception_time = 10; // 最后一次异常时间
+  int64 total_detections = 3;                          // 总检测次数
+  int64 exception_count = 4;                           // 异常次数
+  double exception_rate = 5;                           // 异常概率 (0.0-1.0)
+  int64 unique_car_count = 6;                          // 出现异常的小车数量
+  int64 total_car_count = 7;                           // 总小车数量
+  bool is_location_related = 8;                        // 是否为场地问题（多车在同一位置异常）
+  repeated int64 affected_car_ids = 9;                 // 受影响的小车ID列表
+  google.protobuf.Timestamp last_exception_time = 10;  // 最后一次异常时间
 }
 
 // 单车异常概率分析请求
 message CarExceptionAnalysisRequest {
-  int64 car_id = 1;                     // 小车ID
-  ExceptionCategory category = 2;        // 异常类别
-  optional MarkerIssueType marker_issue_type = 3; // 二维码问题类型（可选）
-  optional GroundIssueType ground_issue_type = 4;  // 地面问题类型（可选）
-  optional GoodsSlotIssueType goods_slot_issue_type = 5; // 货架问题类型（可选）
-  optional google.protobuf.Timestamp start_time = 6; // 开始时间
-  optional google.protobuf.Timestamp end_time = 7;     // 结束时间
+  int64 car_id = 1;                                       // 小车ID
+  ExceptionCategory category = 2;                         // 异常类别
+  optional MarkerIssueType marker_issue_type = 3;         // 二维码问题类型（可选）
+  optional GroundIssueType ground_issue_type = 4;         // 地面问题类型（可选）
+  optional GoodsSlotIssueType goods_slot_issue_type = 5;  // 货架问题类型（可选）
+  optional google.protobuf.Timestamp start_time = 6;      // 开始时间
+  optional google.protobuf.Timestamp end_time = 7;        // 结束时间
 }
 
 // 单车异常概率分析响应
 message CarExceptionAnalysisResponse {
   int64 car_id = 1;
   ExceptionCategory category = 2;
-  int64 total_detections = 3;           // 总检测次数
-  int64 exception_count = 4;            // 异常次数
-  double exception_rate = 5;            // 异常概率 (0.0-1.0)
-  int64 affected_location_count = 6;    // 出现异常的位置数量
-  bool is_car_related = 7;              // 是否为车辆问题（单车在多个位置出现相同异常）
-  repeated int64 affected_node_ids = 8; // 受影响的位置ID列表
-  google.protobuf.Timestamp last_exception_time = 9; // 最后一次异常时间
+  int64 total_detections = 3;                         // 总检测次数
+  int64 exception_count = 4;                          // 异常次数
+  double exception_rate = 5;                          // 异常概率 (0.0-1.0)
+  int64 affected_location_count = 6;                  // 出现异常的位置数量
+  bool is_car_related = 7;                            // 是否为车辆问题（单车在多个位置出现相同异常）
+  repeated int64 affected_node_ids = 8;               // 受影响的位置ID列表
+  google.protobuf.Timestamp last_exception_time = 9;  // 最后一次异常时间
 }
 
 // 数据清理/更新请求
 message DataCleanupRequest {
-  ExceptionCategory category = 1;        // 异常类别
-  optional int64 node_id = 2;            // 位置ID（二维码节点或货架ID）
+  ExceptionCategory category = 1;  // 异常类别
+  optional int64 node_id = 2;      // 位置ID（二维码节点或货架ID）
   optional PositionData_t logic_location = 3;
-  optional string marker_code = 4;       // 二维码码值（更换后的新码值）
-  optional google.protobuf.Timestamp before_time = 5; // 清理此时间之前的数据
-  bool clear_all = 6;                    // 是否清理所有相关数据
+  optional string marker_code = 4;                     // 二维码码值（更换后的新码值）
+  optional google.protobuf.Timestamp before_time = 5;  // 清理此时间之前的数据
+  bool clear_all = 6;                                  // 是否清理所有相关数据
 }
 
 // 数据清理/更新响应
 message DataCleanupResponse {
-  int64 cleaned_count = 1;              // 清理的数据条数
-  bool success = 2;                     // 是否成功
-  string message = 3;                   // 响应消息
+  int64 cleaned_count = 1;  // 清理的数据条数
+  bool success = 2;         // 是否成功
+  string message = 3;       // 响应消息
 }
 
 // 查询车辆在某个位置的统计请求
 message CarLocationStatsRequest {
-  int64 car_id = 1;                     // 车辆ID
-  PositionData_t logic_location = 2;    // 逻辑坐标
+  int64 car_id = 1;                   // 车辆ID
+  PositionData_t logic_location = 2;  // 逻辑坐标
 }
 
 // 车辆位置统计响应
 message CarLocationStatsResponse {
-  int64 car_id = 1;                     // 车辆ID
-  PositionData_t logic_location = 2;    // 逻辑坐标
-  int64 total_count = 3;                // 总检测次数
-  int64 normal_count = 4;               // 正常次数
-  int64 warning_count = 5;              // 警告次数
-  int64 error_count = 6;                // 错误次数
-  int64 critical_count = 7;             // 严重次数
-  double normal_rate = 8;               // 正常率 (0.0-100.0)
-  double warning_rate = 9;              // 警告率 (0.0-100.0)
-  double error_rate = 10;               // 错误率 (0.0-100.0)
-  double critical_rate = 11;            // 严重率 (0.0-100.0)
+  int64 car_id = 1;                   // 车辆ID
+  PositionData_t logic_location = 2;  // 逻辑坐标
+  int64 total_count = 3;              // 总检测次数
+  int64 normal_count = 4;             // 正常次数
+  int64 warning_count = 5;            // 警告次数
+  int64 error_count = 6;              // 错误次数
+  int64 critical_count = 7;           // 严重次数
+  double normal_rate = 8;             // 正常率 (0.0-100.0)
+  double warning_rate = 9;            // 警告率 (0.0-100.0)
+  double error_rate = 10;             // 错误率 (0.0-100.0)
+  double critical_rate = 11;          // 严重率 (0.0-100.0)
+}
+
+// ============= 二维码角度学习相关消息 =============
+
+// 学习状态
+enum LearningStatus {
+  LEARNING_STATUS_COLLECTING = 0;    // 收集中
+  LEARNING_STATUS_COMPLETED = 1;     // 完成
+  LEARNING_STATUS_NEED_RELEARN = 2;  // 需重新学习
+  LEARNING_STATUS_FAILED = 3;        // 失败
+}
+
+// 单次角度采样数据
+message AngleSample {
+  int64 car_id = 1;                         // 车辆ID
+  string car_type = 2;                      // 车型
+  PositionData_t logic_location = 3;        // 逻辑坐标（手动添加时必需）
+  double car_heading = 4;                   // 车头朝向（度）
+  double movement_direction = 5;            // 运动方向（度）
+  double movement_speed = 6;                // 运动速度（m/s）
+  double learned_angle = 7;                 // 学习角度（度）
+  double quality_score = 8;                 // 质量评分 (0.0-1.0)
+  google.protobuf.Timestamp timestamp = 9;  // 采样时间
+}
+
+// 局部学习数据（单车）
+message LocalAngleLearningData {
+  int64 car_id = 1;                            // 车辆ID
+  PositionData_t logic_location = 2;           // 逻辑坐标
+  double learned_angle = 3;                    // 学习角度（度）
+  double confidence = 4;                       // 置信度 (0.0-1.0)
+  int32 sample_count = 5;                      // 学习次数
+  google.protobuf.Timestamp last_updated = 6;  // 最后更新时间
+}
+
+// 全局学习结果
+message GlobalAngleLearningResult {
+  PositionData_t logic_location = 1;           // 逻辑坐标
+  double learned_angle = 2;                    // 学习角度（度）
+  double confidence = 3;                       // 置信度 (0.0-1.0)
+  LearningStatus status = 4;                   // 学习状态
+  int32 sample_count = 5;                      // 样本数量
+  int32 vehicle_count = 6;                     // 参与车辆数
+  double std_deviation = 7;                    // 标准差（度）
+  repeated AngleSample samples = 8;            // 样本列表（可选，用于详细查询）
+  google.protobuf.Timestamp last_updated = 9;  // 最后更新时间
+}
+
+// 角度学习上报请求（单车上报）
+message ReportAngleLearningRequest {
+  int64 car_id = 1;                       // 车辆ID
+  string car_type = 2;                    // 车型
+  PositionData_t logic_location = 3;      // 逻辑坐标
+  double car_heading = 4;                 // 车头朝向（度）
+  double movement_direction = 5;          // 运动方向（度）
+  double movement_speed = 6;              // 运动速度（m/s）
+  double learned_angle = 7;               // 学习角度（度）
+  double clarity = 8;                     // 二维码清晰度 (0.0-1.0)
+  HealthStatus marker_health_status = 9;  // 二维码健康状态
+}
+
+// 角度学习上报响应
+message ReportAngleLearningResponse {
+  bool success = 1;                                      // 是否成功
+  string message = 2;                                    // 响应消息
+  optional GlobalAngleLearningResult global_result = 3;  // 全局学习结果（如果已完成）
+}
+
+// 查询角度学习结果请求
+message QueryAngleLearningRequest {
+  optional int64 car_id = 1;                   // 车辆ID（查询局部学习）
+  optional PositionData_t logic_location = 2;  // 逻辑坐标
+  bool include_samples = 3;                    // 是否包含样本详情
+}
+
+// 查询角度学习结果响应
+message QueryAngleLearningResponse {
+  optional LocalAngleLearningData local_learning = 1;      // 局部学习数据
+  optional GlobalAngleLearningResult global_learning = 2;  // 全局学习结果
+  optional double final_angle = 3;                         // 最终应用角度（局部+全局加权）
+  optional double local_weight = 4;                        // 局部权重
+  optional double global_weight = 5;                       // 全局权重
+}
+
+// 批量查询角度学习结果请求
+message BatchQueryAngleLearningRequest {
+  repeated PositionData_t logic_locations = 1;  // 逻辑坐标列表
+  optional int64 car_id = 2;                    // 车辆ID（可选，用于查询局部学习）
+}
+
+// 批量查询角度学习结果响应
+message BatchQueryAngleLearningResponse {
+  map<string, QueryAngleLearningResponse> results = 1;  // key: "x,y,angle"格式的坐标字符串
+}
+
+// 重置角度学习数据请求
+message ResetAngleLearningRequest {
+  optional int64 car_id = 1;                   // 车辆ID（重置局部学习）
+  optional PositionData_t logic_location = 2;  // 逻辑坐标（重置全局学习）
+  bool reset_all = 3;                          // 是否重置所有数据
+}
+
+// 重置角度学习数据响应
+message ResetAngleLearningResponse {
+  bool success = 1;       // 是否成功
+  string message = 2;     // 响应消息
+  int32 reset_count = 3;  // 重置的记录数
+}
+
+// 清除角度学习数据请求（支持更多过滤条件）
+message CleanupAngleLearningRequest {
+  optional int64 car_id = 1;                           // 车辆ID（清除特定车辆的局部学习数据）
+  optional PositionData_t logic_location = 2;          // 逻辑坐标（清除特定位置的学习数据）
+  optional google.protobuf.Timestamp before_time = 3;  // 清除此时间之前的数据
+  optional LearningStatus status = 4;                  // 清除特定状态的数据
+  optional double max_confidence = 5;                  // 清除置信度低于此值的数据
+  optional double min_std_deviation = 6;               // 清除标准差大于此值的数据
+  bool cleanup_all = 7;                                // 是否清除所有数据
+  bool cleanup_local_only = 8;                         // 仅清除局部学习数据
+  bool cleanup_global_only = 9;                        // 仅清除全局学习数据
+}
+
+// 清除角度学习数据响应
+message CleanupAngleLearningResponse {
+  bool success = 1;                 // 是否成功
+  string message = 2;               // 响应消息
+  int32 local_cleaned_count = 3;    // 清除的局部学习记录数
+  int32 global_cleaned_count = 4;   // 清除的全局学习记录数
+  int32 samples_cleaned_count = 5;  // 清除的样本数
+}
+
+// 角度学习统计信息
+message AngleLearningStatistics {
+  int32 total_locations = 1;                   // 总位置数
+  int32 completed_locations = 2;               // 完成学习的位置数
+  int32 collecting_locations = 3;              // 收集中的位置数
+  int32 need_relearn_locations = 4;            // 需重新学习的位置数
+  int32 total_samples = 5;                     // 总样本数
+  int32 total_vehicles = 6;                    // 参与车辆数
+  double average_confidence = 7;               // 平均置信度
+  google.protobuf.Timestamp last_updated = 8;  // 最后更新时间
+}
+
+// 角度学习位置列表响应
+message AngleLearningLocationsResponse {
+  repeated GlobalAngleLearningResult locations = 1;  // 所有位置的学习结果列表
+  int32 total_count = 2;                             // 总数量
 }
 
 service SiteHealthService {
   // 上报场地健康数据
   rpc ReportSiteHealthInfo(SiteHealthInfo) returns (google.protobuf.Empty);
-  
+
   // 批量上报场地健康数据
   rpc BatchReportSiteHealthInfo(stream SiteHealthInfo) returns (google.protobuf.Empty);
-  
+
   // 查询健康信息
   rpc QueryHealthInfo(HealthInfoQueryRequest) returns (HealthInfoQueryResponse);
-  
+
   // 获取健康统计信息
   rpc GetHealthStatistics(google.protobuf.Empty) returns (HealthStatistics);
-  
+
   // 订阅健康状态变化（流式）
   rpc SubscribeHealthStatus(google.protobuf.Empty) returns (stream SiteHealthInfo);
-  
+
   // 位置异常概率分析（判断是否为场地问题）
   rpc AnalyzeLocationException(LocationExceptionAnalysisRequest) returns (LocationExceptionAnalysisResponse);
-  
+
   // 单车异常概率分析（判断是否为车辆问题）
   rpc AnalyzeCarException(CarExceptionAnalysisRequest) returns (CarExceptionAnalysisResponse);
-  
+
   // 数据清理/更新（如二维码更换后清理旧数据）
   rpc CleanupData(DataCleanupRequest) returns (DataCleanupResponse);
-  
+
   // 查询某台车在某个逻辑坐标的健康状态统计
   rpc GetCarLocationStats(CarLocationStatsRequest) returns (CarLocationStatsResponse);
+
+  // 重置某个位置的健康状态数据（用于重新检测）
+  rpc ResetLocationHealthData(HealthInfoQueryRequest) returns (DataCleanupResponse);
+
+  // ============= 二维码角度学习接口 =============
+
+  // 上报角度学习数据（单车上报）
+  rpc ReportAngleLearning(ReportAngleLearningRequest) returns (ReportAngleLearningResponse);
+
+  // 查询角度学习结果（单个位置）
+  rpc QueryAngleLearning(QueryAngleLearningRequest) returns (QueryAngleLearningResponse);
+
+  // 批量查询角度学习结果
+  rpc BatchQueryAngleLearning(BatchQueryAngleLearningRequest) returns (BatchQueryAngleLearningResponse);
+
+  // 重置角度学习数据
+  rpc ResetAngleLearning(ResetAngleLearningRequest) returns (ResetAngleLearningResponse);
+
+  // 清除角度学习数据（支持更多过滤条件）
+  rpc CleanupAngleLearning(CleanupAngleLearningRequest) returns (CleanupAngleLearningResponse);
+
+  // 获取角度学习统计信息
+  rpc GetAngleLearningStatistics(google.protobuf.Empty) returns (AngleLearningStatistics);
+
+  // 获取所有角度学习位置（返回所有有数据的位置）
+  rpc GetAllAngleLearningLocations(google.protobuf.Empty) returns (AngleLearningLocationsResponse);
+
+  // 订阅角度学习状态变化（流式）
+  rpc SubscribeAngleLearningStatus(google.protobuf.Empty) returns (stream GlobalAngleLearningResult);
+
+  // 手动添加角度数据
+  rpc AddManualAngleSample(AngleSample) returns (google.protobuf.Empty);
 }

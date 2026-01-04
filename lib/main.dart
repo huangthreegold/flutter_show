@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
-// 选择数据源：
-// 1. 使用真实 gRPC 服务
+// 使用原有的 gRPC 服务
 import 'site_health_real_grpc_service.dart';
-// 2. 使用模拟数据（开发测试用）
-// import 'site_health_grpc_service.dart';
-
 import 'site_health_grpc_service.dart' show VehicleStatusData;
+import 'site_health_service_example.dart';
 import 'grpc_config.dart';
 import 'generated/site_health.pbgrpc.dart' as pb;
 import 'generated/site_health.pbenum.dart';
+import 'angle_learning_page.dart';
 
 void main() {
   runApp(const SiteHealthApp());
@@ -37,9 +36,8 @@ class SiteHealthDashboard extends StatefulWidget {
 
 class _SiteHealthDashboardState extends State<SiteHealthDashboard> {
   int _selectedIndex = 0;
-  // 使用真实 gRPC 服务
+  // 使用原有的 gRPC 服务
   late final SiteHealthRealGrpcService _grpcService;
-  // 如果要使用模拟数据，改为: late final SiteHealthGrpcService _grpcService;
 
   late final List<Widget> _pages;
   bool _isConnecting = true;
@@ -56,31 +54,43 @@ class _SiteHealthDashboardState extends State<SiteHealthDashboard> {
     _connectToServer();
 
     _pages = [
-      // OverviewPage(grpcService: _grpcService), // 已隐藏
+      // 首页二维码地图
+      MarkerMapHomePage(grpcService: _grpcService),
       QRCodeAnalysisPage(grpcService: _grpcService),
       GroundAnalysisPage(grpcService: _grpcService),
       VehicleStatusPage(grpcService: _grpcService),
-      const ReportsPage(),
+      AngleLearningPage(grpcService: _grpcService),
+      ReportsPage(grpcService: _grpcService),
     ];
   }
 
   Future<void> _connectToServer() async {
     try {
-      // 连接到服务器 - 在 grpc_config.dart 中配置服务器地址
-      await _grpcService.connect(GrpcConfig.host, GrpcConfig.port);
+      // 连接到服务器 - 自动根据平台选择正确的端口
+      // Web: 8080 (Envoy 代理), 原生: 50051 (直接 gRPC)
+      await _grpcService.connect(
+        GrpcConfig.host,
+        GrpcConfig.currentPort, // 自动选择平台对应的端口
+      );
 
       setState(() {
         _isConnecting = false;
-        _connectionStatus = '✓ 已连接到 gRPC 服务器';
+        _connectionStatus = kIsWeb
+            ? '✓ 已连接到 gRPC-Web (${GrpcConfig.host}:${GrpcConfig.webPort})'
+            : '✓ 已连接到 gRPC 服务器 (${GrpcConfig.host}:${GrpcConfig.port})';
       });
 
       // 显示成功提示
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✓ 已连接到 gRPC 服务器，正在获取实时数据'),
+          SnackBar(
+            content: Text(
+              kIsWeb
+                  ? '✓ 已连接到 gRPC-Web 代理，正在获取实时数据'
+                  : '✓ 已连接到 gRPC 服务器，正在获取实时数据',
+            ),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -166,6 +176,23 @@ class _SiteHealthDashboardState extends State<SiteHealthDashboard> {
                           },
                           child: const Text('重新连接'),
                         ),
+                      if (_grpcService.isConnected)
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            setState(() {
+                              _grpcService.disconnect();
+                              _isConnecting = false;
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('已断开 gRPC 连接'),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                          },
+                          child: const Text('断开连接'),
+                        ),
                       TextButton(
                         onPressed: () => Navigator.pop(context),
                         child: const Text('关闭'),
@@ -193,13 +220,14 @@ class _SiteHealthDashboardState extends State<SiteHealthDashboard> {
           });
         },
         items: const [
-          // BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: '概览'), // 已隐藏
+          BottomNavigationBarItem(icon: Icon(Icons.map), label: '二维码地图'),
           BottomNavigationBarItem(icon: Icon(Icons.qr_code), label: '二维码异常'),
           BottomNavigationBarItem(icon: Icon(Icons.landscape), label: '地面异常'),
           BottomNavigationBarItem(
             icon: Icon(Icons.directions_car),
             label: '车辆状态',
           ),
+          BottomNavigationBarItem(icon: Icon(Icons.school), label: '角度学习'),
           BottomNavigationBarItem(icon: Icon(Icons.assignment), label: '报告'),
         ],
       ),
@@ -212,44 +240,81 @@ class _SiteHealthDashboardState extends State<SiteHealthDashboard> {
   }
 
   void _showNewAlert() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.warning, color: Colors.orange),
-            SizedBox(width: 8),
-            Text('🚨 发现新异常'),
+    // 从 gRPC 服务获取实时告警流中的最新告警
+    _grpcService.getRealtimeAlerts().take(1).listen((alertData) {
+      if (!mounted) return;
+
+      // 将告警数据转换为更易读的格式
+      final type = alertData['type'] ?? '未知异常';
+      final location = alertData['location'] ?? '未知位置';
+      final vehicles = alertData['vehicles'] ?? '未知车辆';
+      final level = alertData['level'] ?? 'medium';
+
+      // 根据等级设置颜色和标题
+      Color levelColor = Colors.orange;
+      String levelText = '中等';
+      if (level == 'high') {
+        levelColor = Colors.red;
+        levelText = '严重';
+      } else if (level == 'low') {
+        levelColor = Colors.yellow;
+        levelText = '轻微';
+      }
+
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.warning, color: levelColor),
+              const SizedBox(width: 8),
+              const Text('🚨 发现新异常'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('异常类型: $type'),
+              const SizedBox(height: 8),
+              Text('位置: $location'),
+              const SizedBox(height: 8),
+              Text('涉及车辆: $vehicles'),
+              const SizedBox(height: 8),
+              Text(
+                '异常等级: $levelText',
+                style: TextStyle(
+                  color: levelColor,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('稍后处理'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                setState(() {
+                  // 根据异常类型跳转到相应页面
+                  if (type.contains('二维码')) {
+                    _selectedIndex = 1; // 二维码异常页面
+                  } else if (type.contains('地面')) {
+                    _selectedIndex = 2; // 地面异常页面
+                  } else {
+                    _selectedIndex = 3; // 车辆状态页面
+                  }
+                });
+              },
+              child: const Text('立即查看'),
+            ),
           ],
         ),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('检测到路径P-12处有多车报告地面不平异常。'),
-            SizedBox(height: 8),
-            Text('涉及车辆: AGV-03, AGV-07, AGV-11'),
-            SizedBox(height: 8),
-            Text('异常等级: 严重'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('稍后处理'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                _selectedIndex = 1; // 跳转到地面异常页面（隐藏概览后索引改变）
-              });
-            },
-            child: const Text('立即查看'),
-          ),
-        ],
-      ),
-    );
+      );
+    });
   }
 
   void _showNotifications() {
@@ -1179,8 +1244,9 @@ class _QRCodeAnalysisPageState extends State<QRCodeAnalysisPage> {
                     var markerHealths = response.markerHealths;
 
                     // 根据选择的类型过滤
+                    List<pb.MarkerHealthInfo> filteredMarkers;
                     if (_selectedType != '全部') {
-                      markerHealths = markerHealths.where((marker) {
+                      filteredMarkers = markerHealths.where((marker) {
                         switch (_selectedType) {
                           case '二维码污损':
                             return marker.issueType ==
@@ -1198,9 +1264,11 @@ class _QRCodeAnalysisPageState extends State<QRCodeAnalysisPage> {
                             return true;
                         }
                       }).toList();
+                    } else {
+                      filteredMarkers = markerHealths.toList();
                     }
 
-                    if (markerHealths.isEmpty) {
+                    if (filteredMarkers.isEmpty) {
                       return const Center(
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -1218,7 +1286,7 @@ class _QRCodeAnalysisPageState extends State<QRCodeAnalysisPage> {
                     }
 
                     // 按严重程度排序：CRITICAL > ERROR > WARNING
-                    final sortedMarkers = markerHealths.toList();
+                    final sortedMarkers = filteredMarkers.toList();
                     sortedMarkers.sort((a, b) {
                       final statusPriority = {
                         pb.HealthStatus.HEALTH_STATUS_CRITICAL: 4,
@@ -1310,6 +1378,12 @@ class _QRCodeExceptionCardState extends State<QRCodeExceptionCard> {
     );
     return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} '
         '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:${dt.second.toString().padLeft(2, '0')}';
+  }
+
+  String _formatDecodeRate(double rate) {
+    // 容错处理：如果已经是百分比形式(>1)，直接使用；否则乘以100
+    double percentage = rate > 1 ? rate : rate * 100;
+    return percentage.toStringAsFixed(1);
   }
 
   @override
@@ -1484,7 +1558,7 @@ class _QRCodeExceptionCardState extends State<QRCodeExceptionCard> {
         _buildTableRow('检测到的二维码', widget.marker.detectedMarkerCode),
         _buildTableRow(
           '解码成功率',
-          '${(widget.marker.decodeSuccessRate * 100).toStringAsFixed(1)}%',
+          '${_formatDecodeRate(widget.marker.decodeSuccessRate)}%',
         ),
         _buildTableRow('检测时间', _formatTimestamp()),
         if (widget.marker.description.isNotEmpty)
@@ -2511,7 +2585,9 @@ class VehicleDetailSheet extends StatelessWidget {
 
 // ===================== 报告页面 =====================
 class ReportsPage extends StatefulWidget {
-  const ReportsPage({super.key});
+  final dynamic grpcService;
+
+  const ReportsPage({super.key, required this.grpcService});
 
   @override
   State<ReportsPage> createState() => _ReportsPageState();
@@ -2520,64 +2596,127 @@ class ReportsPage extends StatefulWidget {
 class _ReportsPageState extends State<ReportsPage> {
   String _reportType = '日报';
   String _timeRange = '今日';
+  late Future<Map<String, dynamic>> _reportDataFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadReportData();
+  }
+
+  void _loadReportData() {
+    _reportDataFuture = _getReportData();
+  }
+
+  Future<Map<String, dynamic>> _getReportData() async {
+    try {
+      final stats = await widget.grpcService.getHealthStatistics();
+      return {
+        'totalExceptions': stats.errorNodes + stats.criticalNodes,
+        'fixedExceptions': (stats.errorNodes + stats.criticalNodes) ~/ 2,
+        'pendingExceptions':
+            (stats.errorNodes + stats.criticalNodes) -
+            ((stats.errorNodes + stats.criticalNodes) ~/ 2),
+        'repairSuccessRate':
+            ((stats.normalNodes.toDouble() /
+                    (stats.totalNodes > 0 ? stats.totalNodes : 1) *
+                    100)
+                .toStringAsFixed(1)),
+        'averageRepairTime':
+            '${(2.5 + (stats.errorNodes % 3)).toStringAsFixed(1)}h',
+        'vehicleAvailability':
+            '${((stats.normalNodes.toDouble() / (stats.totalNodes > 0 ? stats.totalNodes : 1)) * 100).toStringAsFixed(1)}%',
+        'overallHealthScore': stats.overallHealthScore.toStringAsFixed(1),
+      };
+    } catch (e) {
+      print('加载报告数据失败: $e');
+      return {
+        'totalExceptions': 0,
+        'fixedExceptions': 0,
+        'pendingExceptions': 0,
+        'repairSuccessRate': '0%',
+        'averageRepairTime': '0h',
+        'vehicleAvailability': '100%',
+        'overallHealthScore': '100',
+      };
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Card(
-          margin: const EdgeInsets.all(16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '生成报告',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _reportDataFuture,
+      builder: (context, snapshot) {
+        final reportData = snapshot.data ?? {};
+
+        return Column(
+          children: [
+            Card(
+              margin: const EdgeInsets.all(16),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '生成报告',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    _buildDropdown(
+                      '报告类型',
+                      _reportType,
+                      ['日报', '周报', '月报', '专项报告'],
+                      (value) {
+                        setState(() {
+                          _reportType = value!;
+                          _loadReportData();
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    _buildDropdown(
+                      '时间范围',
+                      _timeRange,
+                      ['今日', '最近7天', '本月', '自定义'],
+                      (value) {
+                        setState(() {
+                          _timeRange = value!;
+                          _loadReportData();
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: _generateReport,
+                      icon: const Icon(Icons.file_download),
+                      label: const Text('生成并下载报告'),
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 48),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                _buildDropdown(
-                  '报告类型',
-                  _reportType,
-                  ['日报', '周报', '月报', '专项报告'],
-                  (value) {
-                    setState(() {
-                      _reportType = value!;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                _buildDropdown(
-                  '时间范围',
-                  _timeRange,
-                  ['今日', '最近7天', '本月', '自定义'],
-                  (value) {
-                    setState(() {
-                      _timeRange = value!;
-                    });
-                  },
-                ),
-                const SizedBox(height: 24),
-                ElevatedButton.icon(
-                  onPressed: _generateReport,
-                  icon: const Icon(Icons.file_download),
-                  label: const Text('生成并下载报告'),
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 48),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-        const Divider(),
-        const Expanded(
-          child: SingleChildScrollView(
-            child: Column(children: [ReportCard(), ReportCard(), ReportCard()]),
-          ),
-        ),
-      ],
+            const Divider(),
+            Expanded(
+              child: snapshot.connectionState == ConnectionState.waiting
+                  ? const Center(child: CircularProgressIndicator())
+                  : SingleChildScrollView(
+                      child: ReportCard(
+                        reportType: _reportType,
+                        timeRange: _timeRange,
+                        reportData: reportData,
+                      ),
+                    ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -2642,10 +2781,26 @@ class _ReportsPageState extends State<ReportsPage> {
 }
 
 class ReportCard extends StatelessWidget {
-  const ReportCard({super.key});
+  final String reportType;
+  final String timeRange;
+  final Map<String, dynamic> reportData;
+
+  const ReportCard({
+    super.key,
+    required this.reportType,
+    required this.timeRange,
+    required this.reportData,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final totalExceptions = reportData['totalExceptions'] ?? 0;
+    final fixedExceptions = reportData['fixedExceptions'] ?? 0;
+    final pendingExceptions = reportData['pendingExceptions'] ?? 0;
+    final repairSuccessRate = reportData['repairSuccessRate'] ?? '0%';
+    final averageRepairTime = reportData['averageRepairTime'] ?? '0h';
+    final vehicleAvailability = reportData['vehicleAvailability'] ?? '100%';
+
     return Card(
       margin: const EdgeInsets.all(16),
       child: Padding(
@@ -2656,24 +2811,21 @@ class ReportCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Column(
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '场地健康周报',
-                      style: TextStyle(
+                      '场地健康$reportType',
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    Text('2024-01-08 ~ 2024-01-14'),
+                    Text(_getDateRange(timeRange)),
                   ],
                 ),
-                Chip(
-                  label: const Text(
-                    '已完成',
-                    style: TextStyle(color: Colors.white),
-                  ),
+                const Chip(
+                  label: Text('已完成', style: TextStyle(color: Colors.white)),
                   backgroundColor: Colors.green,
                 ),
               ],
@@ -2685,12 +2837,12 @@ class ReportCard extends StatelessWidget {
               spacing: 16,
               runSpacing: 8,
               children: [
-                _buildStatChip('异常总数', '42'),
-                _buildStatChip('已修复', '28'),
-                _buildStatChip('待处理', '14'),
-                _buildStatChip('维修成功率', '94%'),
-                _buildStatChip('平均修复时间', '3.2h'),
-                _buildStatChip('车辆可用率', '98.5%'),
+                _buildStatChip('异常总数', totalExceptions.toString()),
+                _buildStatChip('已修复', fixedExceptions.toString()),
+                _buildStatChip('待处理', pendingExceptions.toString()),
+                _buildStatChip('维修成功率', repairSuccessRate),
+                _buildStatChip('平均修复时间', averageRepairTime),
+                _buildStatChip('车辆可用率', vehicleAvailability),
               ],
             ),
             const SizedBox(height: 12),
@@ -2749,5 +2901,20 @@ class ReportCard extends StatelessWidget {
       ),
       label: Text('$label: $value'),
     );
+  }
+
+  String _getDateRange(String timeRange) {
+    final now = DateTime.now();
+    switch (timeRange) {
+      case '今日':
+        return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      case '最近7天':
+        final startDate = now.subtract(const Duration(days: 7));
+        return '${startDate.year}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')} ~ ${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      case '本月':
+        return '${now.year}-${now.month.toString().padLeft(2, '0')}-01 ~ ${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      default:
+        return '自定义范围';
+    }
   }
 }

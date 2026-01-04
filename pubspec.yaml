@@ -32,12 +32,16 @@ dependencies:
     sdk: flutter
   qr_flutter: ^4.1.0 # 二维码生成库
   cached_network_image: ^3.3.0 # 图片缓存库
-  grpc: ^4.0.1 # gRPC客户端
-  protobuf: ^3.1.0 # Protocol Buffers
+  grpc: ^5.1.0 # gRPC客户端 (移动端/桌面端)
+  protobuf: ^6.0.0 # Protocol Buffers
   fixnum: ^1.1.0 # 固定精度整数（gRPC 依赖）
+  http: ^1.1.0 # HTTP 客户端（Web gRPC 需要）
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  # Flutter Web 插件，用于平台检测
+  flutter_web_plugins:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:

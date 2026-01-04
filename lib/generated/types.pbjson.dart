@@ -1,13 +1,15 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: types.proto
-//
-// @dart = 2.12
+// Generated from types.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
+// ignore_for_file: unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -34,8 +36,23 @@ const MapNodeHealthInfo$json = {
   '2': [
     {'1': 'node_id', '3': 1, '4': 1, '5': 3, '10': 'nodeId'},
     {'1': 'marker_code', '3': 2, '4': 1, '5': 9, '10': 'markerCode'},
-    {'1': 'decode_success_rate', '3': 3, '4': 1, '5': 1, '10': 'decodeSuccessRate'},
-    {'1': 'deviation', '3': 4, '4': 1, '5': 11, '6': '.galaxis.site.health.NodeDeviationData', '9': 0, '10': 'deviation', '17': true},
+    {
+      '1': 'decode_success_rate',
+      '3': 3,
+      '4': 1,
+      '5': 1,
+      '10': 'decodeSuccessRate'
+    },
+    {
+      '1': 'deviation',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.NodeDeviationData',
+      '9': 0,
+      '10': 'deviation',
+      '17': true
+    },
   ],
   '8': [
     {'1': '_deviation'},
@@ -84,9 +101,36 @@ const CurrentMarkData$json = {
     {'1': 'car_id', '3': 1, '4': 1, '5': 3, '10': 'carId'},
     {'1': 'node_id', '3': 2, '4': 1, '5': 3, '10': 'nodeId'},
     {'1': 'marker_code', '3': 3, '4': 1, '5': 9, '10': 'markerCode'},
-    {'1': 'currentlogiclocation', '3': 4, '4': 1, '5': 11, '6': '.galaxis.site.health.PositionData_t', '9': 0, '10': 'currentlogiclocation', '17': true},
-    {'1': 'currentstandardlocation', '3': 5, '4': 1, '5': 11, '6': '.galaxis.site.health.PositionData_t', '9': 1, '10': 'currentstandardlocation', '17': true},
-    {'1': 'currentcomputedlocation', '3': 6, '4': 1, '5': 11, '6': '.galaxis.site.health.PositionData_f', '9': 2, '10': 'currentcomputedlocation', '17': true},
+    {
+      '1': 'currentlogiclocation',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_t',
+      '9': 0,
+      '10': 'currentlogiclocation',
+      '17': true
+    },
+    {
+      '1': 'currentstandardlocation',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_t',
+      '9': 1,
+      '10': 'currentstandardlocation',
+      '17': true
+    },
+    {
+      '1': 'currentcomputedlocation',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_f',
+      '9': 2,
+      '10': 'currentcomputedlocation',
+      '17': true
+    },
     {'1': 'current_degree', '3': 7, '4': 1, '5': 1, '10': 'currentDegree'},
   ],
   '8': [
@@ -116,7 +160,13 @@ const CodeHealthInfo$json = {
     {'1': 'car_id', '3': 1, '4': 1, '5': 3, '10': 'carId'},
     {'1': 'node_id', '3': 2, '4': 1, '5': 3, '10': 'nodeId'},
     {'1': 'marker_code', '3': 3, '4': 1, '5': 9, '10': 'markerCode'},
-    {'1': 'decode_success_rate', '3': 4, '4': 1, '5': 1, '10': 'decodeSuccessRate'},
+    {
+      '1': 'decode_success_rate',
+      '3': 4,
+      '4': 1,
+      '5': 1,
+      '10': 'decodeSuccessRate'
+    },
     {'1': 'diff_x', '3': 5, '4': 1, '5': 3, '10': 'diffX'},
     {'1': 'diff_y', '3': 6, '4': 1, '5': 3, '10': 'diffY'},
     {'1': 'angle', '3': 7, '4': 1, '5': 1, '10': 'angle'},
@@ -129,4 +179,3 @@ final $typed_data.Uint8List codeHealthInfoDescriptor = $convert.base64Decode(
     'NSBm5vZGVJZBIfCgttYXJrZXJfY29kZRgDIAEoCVIKbWFya2VyQ29kZRIuChNkZWNvZGVfc3Vj'
     'Y2Vzc19yYXRlGAQgASgBUhFkZWNvZGVTdWNjZXNzUmF0ZRIVCgZkaWZmX3gYBSABKANSBWRpZm'
     'ZYEhUKBmRpZmZfeRgGIAEoA1IFZGlmZlkSFAoFYW5nbGUYByABKAFSBWFuZ2xl');
-

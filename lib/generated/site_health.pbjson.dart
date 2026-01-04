@@ -1,13 +1,15 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: site_health.proto
-//
-// @dart = 2.12
+// Generated from site_health.proto.
+
+// @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
+// ignore_for_file: unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -100,21 +102,89 @@ final $typed_data.Uint8List exceptionCategoryDescriptor = $convert.base64Decode(
     'VYQ0VQVElPTl9DQVRFR09SWV9NQVJLRVIQARIdChlFWENFUFRJT05fQ0FURUdPUllfR1JPVU5E'
     'EAISIQodRVhDRVBUSU9OX0NBVEVHT1JZX0dPT0RTX1NMT1QQAw==');
 
+@$core.Deprecated('Use learningStatusDescriptor instead')
+const LearningStatus$json = {
+  '1': 'LearningStatus',
+  '2': [
+    {'1': 'LEARNING_STATUS_COLLECTING', '2': 0},
+    {'1': 'LEARNING_STATUS_COMPLETED', '2': 1},
+    {'1': 'LEARNING_STATUS_NEED_RELEARN', '2': 2},
+    {'1': 'LEARNING_STATUS_FAILED', '2': 3},
+  ],
+};
+
+/// Descriptor for `LearningStatus`. Decode as a `google.protobuf.EnumDescriptorProto`.
+final $typed_data.Uint8List learningStatusDescriptor = $convert.base64Decode(
+    'Cg5MZWFybmluZ1N0YXR1cxIeChpMRUFSTklOR19TVEFUVVNfQ09MTEVDVElORxAAEh0KGUxFQV'
+    'JOSU5HX1NUQVRVU19DT01QTEVURUQQARIgChxMRUFSTklOR19TVEFUVVNfTkVFRF9SRUxFQVJO'
+    'EAISGgoWTEVBUk5JTkdfU1RBVFVTX0ZBSUxFRBAD');
+
 @$core.Deprecated('Use markerHealthInfoDescriptor instead')
 const MarkerHealthInfo$json = {
   '1': 'MarkerHealthInfo',
   '2': [
     {'1': 'car_id', '3': 1, '4': 1, '5': 3, '10': 'carId'},
     {'1': 'node_id', '3': 2, '4': 1, '5': 3, '10': 'nodeId'},
-    {'1': 'node_logic_location', '3': 3, '4': 1, '5': 11, '6': '.galaxis.site.health.PositionData_t', '9': 0, '10': 'nodeLogicLocation', '17': true},
+    {
+      '1': 'node_logic_location',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_t',
+      '9': 0,
+      '10': 'nodeLogicLocation',
+      '17': true
+    },
     {'1': 'exception_type', '3': 4, '4': 1, '5': 9, '10': 'exceptionType'},
-    {'1': 'detected_marker_code', '3': 5, '4': 1, '5': 9, '10': 'detectedMarkerCode'},
-    {'1': 'decode_success_rate', '3': 6, '4': 1, '5': 1, '10': 'decodeSuccessRate'},
-    {'1': 'deviation', '3': 7, '4': 1, '5': 11, '6': '.galaxis.site.health.NodeDeviationData', '9': 1, '10': 'deviation', '17': true},
-    {'1': 'issue_type', '3': 8, '4': 1, '5': 14, '6': '.galaxis.site.health.MarkerIssueType', '10': 'issueType'},
-    {'1': 'health_status', '3': 9, '4': 1, '5': 14, '6': '.galaxis.site.health.HealthStatus', '10': 'healthStatus'},
+    {
+      '1': 'detected_marker_code',
+      '3': 5,
+      '4': 1,
+      '5': 9,
+      '10': 'detectedMarkerCode'
+    },
+    {
+      '1': 'decode_success_rate',
+      '3': 6,
+      '4': 1,
+      '5': 1,
+      '10': 'decodeSuccessRate'
+    },
+    {
+      '1': 'deviation',
+      '3': 7,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.NodeDeviationData',
+      '9': 1,
+      '10': 'deviation',
+      '17': true
+    },
+    {
+      '1': 'issue_type',
+      '3': 8,
+      '4': 1,
+      '5': 14,
+      '6': '.galaxis.site.health.MarkerIssueType',
+      '10': 'issueType'
+    },
+    {
+      '1': 'health_status',
+      '3': 9,
+      '4': 1,
+      '5': 14,
+      '6': '.galaxis.site.health.HealthStatus',
+      '10': 'healthStatus'
+    },
     {'1': 'description', '3': 10, '4': 1, '5': 9, '10': 'description'},
-    {'1': 'timestamp', '3': 11, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'timestamp'},
+    {
+      '1': 'timestamp',
+      '3': 11,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'timestamp'
+    },
   ],
   '8': [
     {'1': '_node_logic_location'},
@@ -142,15 +212,60 @@ const GroundHealthInfo$json = {
   '1': 'GroundHealthInfo',
   '2': [
     {'1': 'car_id', '3': 1, '4': 1, '5': 3, '10': 'carId'},
-    {'1': 'start_node', '3': 2, '4': 1, '5': 11, '6': '.galaxis.site.health.PositionData_t', '9': 0, '10': 'startNode', '17': true},
-    {'1': 'end_node', '3': 3, '4': 1, '5': 11, '6': '.galaxis.site.health.PositionData_t', '9': 1, '10': 'endNode', '17': true},
+    {
+      '1': 'start_node',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_t',
+      '9': 0,
+      '10': 'startNode',
+      '17': true
+    },
+    {
+      '1': 'end_node',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_t',
+      '9': 1,
+      '10': 'endNode',
+      '17': true
+    },
     {'1': 'floor_flatness', '3': 4, '4': 1, '5': 1, '10': 'floorFlatness'},
     {'1': 'max_deviation', '3': 5, '4': 1, '5': 1, '10': 'maxDeviation'},
-    {'1': 'average_deviation', '3': 6, '4': 1, '5': 1, '10': 'averageDeviation'},
-    {'1': 'issue_type', '3': 7, '4': 1, '5': 14, '6': '.galaxis.site.health.GroundIssueType', '10': 'issueType'},
-    {'1': 'health_status', '3': 8, '4': 1, '5': 14, '6': '.galaxis.site.health.HealthStatus', '10': 'healthStatus'},
+    {
+      '1': 'average_deviation',
+      '3': 6,
+      '4': 1,
+      '5': 1,
+      '10': 'averageDeviation'
+    },
+    {
+      '1': 'issue_type',
+      '3': 7,
+      '4': 1,
+      '5': 14,
+      '6': '.galaxis.site.health.GroundIssueType',
+      '10': 'issueType'
+    },
+    {
+      '1': 'health_status',
+      '3': 8,
+      '4': 1,
+      '5': 14,
+      '6': '.galaxis.site.health.HealthStatus',
+      '10': 'healthStatus'
+    },
     {'1': 'description', '3': 9, '4': 1, '5': 9, '10': 'description'},
-    {'1': 'timestamp', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'timestamp'},
+    {
+      '1': 'timestamp',
+      '3': 10,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'timestamp'
+    },
   ],
   '8': [
     {'1': '_start_node'},
@@ -180,27 +295,150 @@ const GoodsSlotHealthInfo$json = {
     {'1': 'goods_slot_id', '3': 2, '4': 1, '5': 3, '10': 'goodsSlotId'},
     {'1': 'expected_height', '3': 3, '4': 1, '5': 3, '10': 'expectedHeight'},
     {'1': 'detected_height', '3': 4, '4': 1, '5': 3, '10': 'detectedHeight'},
-    {'1': 'height_difference', '3': 5, '4': 1, '5': 3, '10': 'heightDifference'},
-    {'1': 'issue_type', '3': 6, '4': 1, '5': 14, '6': '.galaxis.site.health.GoodsSlotIssueType', '10': 'issueType'},
-    {'1': 'health_status', '3': 7, '4': 1, '5': 14, '6': '.galaxis.site.health.HealthStatus', '10': 'healthStatus'},
+    {
+      '1': 'height_difference',
+      '3': 5,
+      '4': 1,
+      '5': 3,
+      '10': 'heightDifference'
+    },
+    {
+      '1': 'issue_type',
+      '3': 6,
+      '4': 1,
+      '5': 14,
+      '6': '.galaxis.site.health.GoodsSlotIssueType',
+      '10': 'issueType'
+    },
+    {
+      '1': 'health_status',
+      '3': 7,
+      '4': 1,
+      '5': 14,
+      '6': '.galaxis.site.health.HealthStatus',
+      '10': 'healthStatus'
+    },
     {'1': 'description', '3': 8, '4': 1, '5': 9, '10': 'description'},
-    {'1': 'timestamp', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'timestamp'},
-    {'1': 'goods_slot_direction', '3': 10, '4': 1, '5': 3, '10': 'goodsSlotDirection'},
-    {'1': 'goods_slot_jack_height', '3': 11, '4': 1, '5': 3, '10': 'goodsSlotJackHeight'},
-    {'1': 'goods_slot_distance_to_station', '3': 12, '4': 1, '5': 3, '10': 'goodsSlotDistanceToStation'},
-    {'1': 'goods_slot_pallet_feature_height', '3': 13, '4': 1, '5': 3, '10': 'goodsSlotPalletFeatureHeight'},
-    {'1': 'goods_slot_type_id', '3': 14, '4': 1, '5': 3, '10': 'goodsSlotTypeId'},
-    {'1': 'detected_goods_slot_beam_line_distance', '3': 15, '4': 1, '5': 3, '10': 'detectedGoodsSlotBeamLineDistance'},
-    {'1': 'detected_goods_slot_beam_line_angle', '3': 16, '4': 1, '5': 3, '10': 'detectedGoodsSlotBeamLineAngle'},
-    {'1': 'detected_goods_slot_pallet_distance', '3': 17, '4': 1, '5': 3, '10': 'detectedGoodsSlotPalletDistance'},
-    {'1': 'detected_goods_slot_pallet_angle', '3': 18, '4': 1, '5': 1, '10': 'detectedGoodsSlotPalletAngle'},
-    {'1': 'detected_goods_slot_upright_distance', '3': 19, '4': 1, '5': 3, '10': 'detectedGoodsSlotUprightDistance'},
-    {'1': 'detected_goods_slot_and_car_angle', '3': 20, '4': 1, '5': 1, '10': 'detectedGoodsSlotAndCarAngle'},
-    {'1': 'detected_goods_slot_pallet_entry_height', '3': 21, '4': 1, '5': 3, '10': 'detectedGoodsSlotPalletEntryHeight'},
-    {'1': 'detected_goods_slot_raw_height', '3': 22, '4': 1, '5': 3, '10': 'detectedGoodsSlotRawHeight'},
-    {'1': 'detected_goods_slot_beam_line_raw_distance', '3': 23, '4': 1, '5': 3, '10': 'detectedGoodsSlotBeamLineRawDistance'},
-    {'1': 'detected_goods_slot_pallet_raw_distance', '3': 24, '4': 1, '5': 3, '10': 'detectedGoodsSlotPalletRawDistance'},
-    {'1': 'detected_goods_slot_upright_raw_distance', '3': 25, '4': 1, '5': 3, '10': 'detectedGoodsSlotUprightRawDistance'},
+    {
+      '1': 'timestamp',
+      '3': 9,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'timestamp'
+    },
+    {
+      '1': 'goods_slot_direction',
+      '3': 10,
+      '4': 1,
+      '5': 3,
+      '10': 'goodsSlotDirection'
+    },
+    {
+      '1': 'goods_slot_jack_height',
+      '3': 11,
+      '4': 1,
+      '5': 3,
+      '10': 'goodsSlotJackHeight'
+    },
+    {
+      '1': 'goods_slot_distance_to_station',
+      '3': 12,
+      '4': 1,
+      '5': 3,
+      '10': 'goodsSlotDistanceToStation'
+    },
+    {
+      '1': 'goods_slot_pallet_feature_height',
+      '3': 13,
+      '4': 1,
+      '5': 3,
+      '10': 'goodsSlotPalletFeatureHeight'
+    },
+    {
+      '1': 'goods_slot_type_id',
+      '3': 14,
+      '4': 1,
+      '5': 3,
+      '10': 'goodsSlotTypeId'
+    },
+    {
+      '1': 'detected_goods_slot_beam_line_distance',
+      '3': 15,
+      '4': 1,
+      '5': 3,
+      '10': 'detectedGoodsSlotBeamLineDistance'
+    },
+    {
+      '1': 'detected_goods_slot_beam_line_angle',
+      '3': 16,
+      '4': 1,
+      '5': 3,
+      '10': 'detectedGoodsSlotBeamLineAngle'
+    },
+    {
+      '1': 'detected_goods_slot_pallet_distance',
+      '3': 17,
+      '4': 1,
+      '5': 3,
+      '10': 'detectedGoodsSlotPalletDistance'
+    },
+    {
+      '1': 'detected_goods_slot_pallet_angle',
+      '3': 18,
+      '4': 1,
+      '5': 1,
+      '10': 'detectedGoodsSlotPalletAngle'
+    },
+    {
+      '1': 'detected_goods_slot_upright_distance',
+      '3': 19,
+      '4': 1,
+      '5': 3,
+      '10': 'detectedGoodsSlotUprightDistance'
+    },
+    {
+      '1': 'detected_goods_slot_and_car_angle',
+      '3': 20,
+      '4': 1,
+      '5': 1,
+      '10': 'detectedGoodsSlotAndCarAngle'
+    },
+    {
+      '1': 'detected_goods_slot_pallet_entry_height',
+      '3': 21,
+      '4': 1,
+      '5': 3,
+      '10': 'detectedGoodsSlotPalletEntryHeight'
+    },
+    {
+      '1': 'detected_goods_slot_raw_height',
+      '3': 22,
+      '4': 1,
+      '5': 3,
+      '10': 'detectedGoodsSlotRawHeight'
+    },
+    {
+      '1': 'detected_goods_slot_beam_line_raw_distance',
+      '3': 23,
+      '4': 1,
+      '5': 3,
+      '10': 'detectedGoodsSlotBeamLineRawDistance'
+    },
+    {
+      '1': 'detected_goods_slot_pallet_raw_distance',
+      '3': 24,
+      '4': 1,
+      '5': 3,
+      '10': 'detectedGoodsSlotPalletRawDistance'
+    },
+    {
+      '1': 'detected_goods_slot_upright_raw_distance',
+      '3': 25,
+      '4': 1,
+      '5': 3,
+      '10': 'detectedGoodsSlotUprightRawDistance'
+    },
   ],
 };
 
@@ -241,9 +479,33 @@ final $typed_data.Uint8List goodsSlotHealthInfoDescriptor = $convert.base64Decod
 const SiteHealthInfo$json = {
   '1': 'SiteHealthInfo',
   '2': [
-    {'1': 'marker_health', '3': 1, '4': 1, '5': 11, '6': '.galaxis.site.health.MarkerHealthInfo', '9': 0, '10': 'markerHealth'},
-    {'1': 'ground_health', '3': 2, '4': 1, '5': 11, '6': '.galaxis.site.health.GroundHealthInfo', '9': 0, '10': 'groundHealth'},
-    {'1': 'goods_slot_health', '3': 3, '4': 1, '5': 11, '6': '.galaxis.site.health.GoodsSlotHealthInfo', '9': 0, '10': 'goodsSlotHealth'},
+    {
+      '1': 'marker_health',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.MarkerHealthInfo',
+      '9': 0,
+      '10': 'markerHealth'
+    },
+    {
+      '1': 'ground_health',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.GroundHealthInfo',
+      '9': 0,
+      '10': 'groundHealth'
+    },
+    {
+      '1': 'goods_slot_health',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.GoodsSlotHealthInfo',
+      '9': 0,
+      '10': 'goodsSlotHealth'
+    },
   ],
   '8': [
     {'1': 'health_info'},
@@ -262,12 +524,64 @@ final $typed_data.Uint8List siteHealthInfoDescriptor = $convert.base64Decode(
 const HealthInfoQueryRequest$json = {
   '1': 'HealthInfoQueryRequest',
   '2': [
-    {'1': 'node_id', '3': 1, '4': 1, '5': 3, '9': 0, '10': 'nodeId', '17': true},
-    {'1': 'logic_location', '3': 2, '4': 1, '5': 11, '6': '.galaxis.site.health.PositionData_t', '9': 1, '10': 'logicLocation', '17': true},
-    {'1': 'goods_slot_id', '3': 3, '4': 1, '5': 3, '9': 2, '10': 'goodsSlotId', '17': true},
-    {'1': 'min_status', '3': 4, '4': 1, '5': 14, '6': '.galaxis.site.health.HealthStatus', '9': 3, '10': 'minStatus', '17': true},
-    {'1': 'start_time', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '9': 4, '10': 'startTime', '17': true},
-    {'1': 'end_time', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '9': 5, '10': 'endTime', '17': true},
+    {
+      '1': 'node_id',
+      '3': 1,
+      '4': 1,
+      '5': 3,
+      '9': 0,
+      '10': 'nodeId',
+      '17': true
+    },
+    {
+      '1': 'logic_location',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_t',
+      '9': 1,
+      '10': 'logicLocation',
+      '17': true
+    },
+    {
+      '1': 'goods_slot_id',
+      '3': 3,
+      '4': 1,
+      '5': 3,
+      '9': 2,
+      '10': 'goodsSlotId',
+      '17': true
+    },
+    {
+      '1': 'min_status',
+      '3': 4,
+      '4': 1,
+      '5': 14,
+      '6': '.galaxis.site.health.HealthStatus',
+      '9': 3,
+      '10': 'minStatus',
+      '17': true
+    },
+    {
+      '1': 'start_time',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '9': 4,
+      '10': 'startTime',
+      '17': true
+    },
+    {
+      '1': 'end_time',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '9': 5,
+      '10': 'endTime',
+      '17': true
+    },
   ],
   '8': [
     {'1': '_node_id'},
@@ -295,9 +609,30 @@ final $typed_data.Uint8List healthInfoQueryRequestDescriptor = $convert.base64De
 const HealthInfoQueryResponse$json = {
   '1': 'HealthInfoQueryResponse',
   '2': [
-    {'1': 'marker_healths', '3': 1, '4': 3, '5': 11, '6': '.galaxis.site.health.MarkerHealthInfo', '10': 'markerHealths'},
-    {'1': 'ground_healths', '3': 2, '4': 3, '5': 11, '6': '.galaxis.site.health.GroundHealthInfo', '10': 'groundHealths'},
-    {'1': 'goods_slot_healths', '3': 3, '4': 3, '5': 11, '6': '.galaxis.site.health.GoodsSlotHealthInfo', '10': 'goodsSlotHealths'},
+    {
+      '1': 'marker_healths',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.galaxis.site.health.MarkerHealthInfo',
+      '10': 'markerHealths'
+    },
+    {
+      '1': 'ground_healths',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.galaxis.site.health.GroundHealthInfo',
+      '10': 'groundHealths'
+    },
+    {
+      '1': 'goods_slot_healths',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.galaxis.site.health.GoodsSlotHealthInfo',
+      '10': 'goodsSlotHealths'
+    },
   ],
 };
 
@@ -319,16 +654,71 @@ const HealthStatistics$json = {
     {'1': 'error_nodes', '3': 4, '4': 1, '5': 3, '10': 'errorNodes'},
     {'1': 'critical_nodes', '3': 5, '4': 1, '5': 3, '10': 'criticalNodes'},
     {'1': 'total_goods_slots', '3': 6, '4': 1, '5': 3, '10': 'totalGoodsSlots'},
-    {'1': 'normal_goods_slots', '3': 7, '4': 1, '5': 3, '10': 'normalGoodsSlots'},
-    {'1': 'warning_goods_slots', '3': 8, '4': 1, '5': 3, '10': 'warningGoodsSlots'},
+    {
+      '1': 'normal_goods_slots',
+      '3': 7,
+      '4': 1,
+      '5': 3,
+      '10': 'normalGoodsSlots'
+    },
+    {
+      '1': 'warning_goods_slots',
+      '3': 8,
+      '4': 1,
+      '5': 3,
+      '10': 'warningGoodsSlots'
+    },
     {'1': 'error_goods_slots', '3': 9, '4': 1, '5': 3, '10': 'errorGoodsSlots'},
-    {'1': 'overall_health_score', '3': 10, '4': 1, '5': 1, '10': 'overallHealthScore'},
-    {'1': 'per_car_exception_counts', '3': 11, '4': 3, '5': 11, '6': '.galaxis.site.health.CarExceptionSummary', '10': 'perCarExceptionCounts'},
-    {'1': 'total_ground_areas', '3': 12, '4': 1, '5': 3, '10': 'totalGroundAreas'},
-    {'1': 'normal_ground_areas', '3': 13, '4': 1, '5': 3, '10': 'normalGroundAreas'},
-    {'1': 'warning_ground_areas', '3': 14, '4': 1, '5': 3, '10': 'warningGroundAreas'},
-    {'1': 'error_ground_areas', '3': 15, '4': 1, '5': 3, '10': 'errorGroundAreas'},
-    {'1': 'critical_ground_areas', '3': 16, '4': 1, '5': 3, '10': 'criticalGroundAreas'},
+    {
+      '1': 'overall_health_score',
+      '3': 10,
+      '4': 1,
+      '5': 1,
+      '10': 'overallHealthScore'
+    },
+    {
+      '1': 'per_car_exception_counts',
+      '3': 11,
+      '4': 3,
+      '5': 11,
+      '6': '.galaxis.site.health.CarExceptionSummary',
+      '10': 'perCarExceptionCounts'
+    },
+    {
+      '1': 'total_ground_areas',
+      '3': 12,
+      '4': 1,
+      '5': 3,
+      '10': 'totalGroundAreas'
+    },
+    {
+      '1': 'normal_ground_areas',
+      '3': 13,
+      '4': 1,
+      '5': 3,
+      '10': 'normalGroundAreas'
+    },
+    {
+      '1': 'warning_ground_areas',
+      '3': 14,
+      '4': 1,
+      '5': 3,
+      '10': 'warningGroundAreas'
+    },
+    {
+      '1': 'error_ground_areas',
+      '3': 15,
+      '4': 1,
+      '5': 3,
+      '10': 'errorGroundAreas'
+    },
+    {
+      '1': 'critical_ground_areas',
+      '3': 16,
+      '4': 1,
+      '5': 3,
+      '10': 'criticalGroundAreas'
+    },
   ],
 };
 
@@ -368,11 +758,51 @@ const LocationExceptionAnalysisRequest$json = {
   '1': 'LocationExceptionAnalysisRequest',
   '2': [
     {'1': 'node_id', '3': 1, '4': 1, '5': 3, '10': 'nodeId'},
-    {'1': 'logic_location', '3': 2, '4': 1, '5': 11, '6': '.galaxis.site.health.PositionData_t', '10': 'logicLocation'},
-    {'1': 'category', '3': 3, '4': 1, '5': 14, '6': '.galaxis.site.health.ExceptionCategory', '10': 'category'},
-    {'1': 'start_time', '3': 4, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '9': 0, '10': 'startTime', '17': true},
-    {'1': 'end_time', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '9': 1, '10': 'endTime', '17': true},
-    {'1': 'marker_code', '3': 6, '4': 1, '5': 9, '9': 2, '10': 'markerCode', '17': true},
+    {
+      '1': 'logic_location',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_t',
+      '10': 'logicLocation'
+    },
+    {
+      '1': 'category',
+      '3': 3,
+      '4': 1,
+      '5': 14,
+      '6': '.galaxis.site.health.ExceptionCategory',
+      '10': 'category'
+    },
+    {
+      '1': 'start_time',
+      '3': 4,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '9': 0,
+      '10': 'startTime',
+      '17': true
+    },
+    {
+      '1': 'end_time',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '9': 1,
+      '10': 'endTime',
+      '17': true
+    },
+    {
+      '1': 'marker_code',
+      '3': 6,
+      '4': 1,
+      '5': 9,
+      '9': 2,
+      '10': 'markerCode',
+      '17': true
+    },
   ],
   '8': [
     {'1': '_start_time'},
@@ -397,15 +827,35 @@ const LocationExceptionAnalysisResponse$json = {
   '1': 'LocationExceptionAnalysisResponse',
   '2': [
     {'1': 'node_id', '3': 1, '4': 1, '5': 3, '10': 'nodeId'},
-    {'1': 'category', '3': 2, '4': 1, '5': 14, '6': '.galaxis.site.health.ExceptionCategory', '10': 'category'},
+    {
+      '1': 'category',
+      '3': 2,
+      '4': 1,
+      '5': 14,
+      '6': '.galaxis.site.health.ExceptionCategory',
+      '10': 'category'
+    },
     {'1': 'total_detections', '3': 3, '4': 1, '5': 3, '10': 'totalDetections'},
     {'1': 'exception_count', '3': 4, '4': 1, '5': 3, '10': 'exceptionCount'},
     {'1': 'exception_rate', '3': 5, '4': 1, '5': 1, '10': 'exceptionRate'},
     {'1': 'unique_car_count', '3': 6, '4': 1, '5': 3, '10': 'uniqueCarCount'},
     {'1': 'total_car_count', '3': 7, '4': 1, '5': 3, '10': 'totalCarCount'},
-    {'1': 'is_location_related', '3': 8, '4': 1, '5': 8, '10': 'isLocationRelated'},
+    {
+      '1': 'is_location_related',
+      '3': 8,
+      '4': 1,
+      '5': 8,
+      '10': 'isLocationRelated'
+    },
     {'1': 'affected_car_ids', '3': 9, '4': 3, '5': 3, '10': 'affectedCarIds'},
-    {'1': 'last_exception_time', '3': 10, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastExceptionTime'},
+    {
+      '1': 'last_exception_time',
+      '3': 10,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'lastExceptionTime'
+    },
   ],
 };
 
@@ -427,12 +877,64 @@ const CarExceptionAnalysisRequest$json = {
   '1': 'CarExceptionAnalysisRequest',
   '2': [
     {'1': 'car_id', '3': 1, '4': 1, '5': 3, '10': 'carId'},
-    {'1': 'category', '3': 2, '4': 1, '5': 14, '6': '.galaxis.site.health.ExceptionCategory', '10': 'category'},
-    {'1': 'marker_issue_type', '3': 3, '4': 1, '5': 14, '6': '.galaxis.site.health.MarkerIssueType', '9': 0, '10': 'markerIssueType', '17': true},
-    {'1': 'ground_issue_type', '3': 4, '4': 1, '5': 14, '6': '.galaxis.site.health.GroundIssueType', '9': 1, '10': 'groundIssueType', '17': true},
-    {'1': 'goods_slot_issue_type', '3': 5, '4': 1, '5': 14, '6': '.galaxis.site.health.GoodsSlotIssueType', '9': 2, '10': 'goodsSlotIssueType', '17': true},
-    {'1': 'start_time', '3': 6, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '9': 3, '10': 'startTime', '17': true},
-    {'1': 'end_time', '3': 7, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '9': 4, '10': 'endTime', '17': true},
+    {
+      '1': 'category',
+      '3': 2,
+      '4': 1,
+      '5': 14,
+      '6': '.galaxis.site.health.ExceptionCategory',
+      '10': 'category'
+    },
+    {
+      '1': 'marker_issue_type',
+      '3': 3,
+      '4': 1,
+      '5': 14,
+      '6': '.galaxis.site.health.MarkerIssueType',
+      '9': 0,
+      '10': 'markerIssueType',
+      '17': true
+    },
+    {
+      '1': 'ground_issue_type',
+      '3': 4,
+      '4': 1,
+      '5': 14,
+      '6': '.galaxis.site.health.GroundIssueType',
+      '9': 1,
+      '10': 'groundIssueType',
+      '17': true
+    },
+    {
+      '1': 'goods_slot_issue_type',
+      '3': 5,
+      '4': 1,
+      '5': 14,
+      '6': '.galaxis.site.health.GoodsSlotIssueType',
+      '9': 2,
+      '10': 'goodsSlotIssueType',
+      '17': true
+    },
+    {
+      '1': 'start_time',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '9': 3,
+      '10': 'startTime',
+      '17': true
+    },
+    {
+      '1': 'end_time',
+      '3': 7,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '9': 4,
+      '10': 'endTime',
+      '17': true
+    },
   ],
   '8': [
     {'1': '_marker_issue_type'},
@@ -463,14 +965,34 @@ const CarExceptionAnalysisResponse$json = {
   '1': 'CarExceptionAnalysisResponse',
   '2': [
     {'1': 'car_id', '3': 1, '4': 1, '5': 3, '10': 'carId'},
-    {'1': 'category', '3': 2, '4': 1, '5': 14, '6': '.galaxis.site.health.ExceptionCategory', '10': 'category'},
+    {
+      '1': 'category',
+      '3': 2,
+      '4': 1,
+      '5': 14,
+      '6': '.galaxis.site.health.ExceptionCategory',
+      '10': 'category'
+    },
     {'1': 'total_detections', '3': 3, '4': 1, '5': 3, '10': 'totalDetections'},
     {'1': 'exception_count', '3': 4, '4': 1, '5': 3, '10': 'exceptionCount'},
     {'1': 'exception_rate', '3': 5, '4': 1, '5': 1, '10': 'exceptionRate'},
-    {'1': 'affected_location_count', '3': 6, '4': 1, '5': 3, '10': 'affectedLocationCount'},
+    {
+      '1': 'affected_location_count',
+      '3': 6,
+      '4': 1,
+      '5': 3,
+      '10': 'affectedLocationCount'
+    },
     {'1': 'is_car_related', '3': 7, '4': 1, '5': 8, '10': 'isCarRelated'},
     {'1': 'affected_node_ids', '3': 8, '4': 3, '5': 3, '10': 'affectedNodeIds'},
-    {'1': 'last_exception_time', '3': 9, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '10': 'lastExceptionTime'},
+    {
+      '1': 'last_exception_time',
+      '3': 9,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'lastExceptionTime'
+    },
   ],
 };
 
@@ -490,11 +1012,52 @@ final $typed_data.Uint8List carExceptionAnalysisResponseDescriptor = $convert.ba
 const DataCleanupRequest$json = {
   '1': 'DataCleanupRequest',
   '2': [
-    {'1': 'category', '3': 1, '4': 1, '5': 14, '6': '.galaxis.site.health.ExceptionCategory', '10': 'category'},
-    {'1': 'node_id', '3': 2, '4': 1, '5': 3, '9': 0, '10': 'nodeId', '17': true},
-    {'1': 'logic_location', '3': 3, '4': 1, '5': 11, '6': '.galaxis.site.health.PositionData_t', '9': 1, '10': 'logicLocation', '17': true},
-    {'1': 'marker_code', '3': 4, '4': 1, '5': 9, '9': 2, '10': 'markerCode', '17': true},
-    {'1': 'before_time', '3': 5, '4': 1, '5': 11, '6': '.google.protobuf.Timestamp', '9': 3, '10': 'beforeTime', '17': true},
+    {
+      '1': 'category',
+      '3': 1,
+      '4': 1,
+      '5': 14,
+      '6': '.galaxis.site.health.ExceptionCategory',
+      '10': 'category'
+    },
+    {
+      '1': 'node_id',
+      '3': 2,
+      '4': 1,
+      '5': 3,
+      '9': 0,
+      '10': 'nodeId',
+      '17': true
+    },
+    {
+      '1': 'logic_location',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_t',
+      '9': 1,
+      '10': 'logicLocation',
+      '17': true
+    },
+    {
+      '1': 'marker_code',
+      '3': 4,
+      '4': 1,
+      '5': 9,
+      '9': 2,
+      '10': 'markerCode',
+      '17': true
+    },
+    {
+      '1': 'before_time',
+      '3': 5,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '9': 3,
+      '10': 'beforeTime',
+      '17': true
+    },
     {'1': 'clear_all', '3': 6, '4': 1, '5': 8, '10': 'clearAll'},
   ],
   '8': [
@@ -536,7 +1099,14 @@ const CarLocationStatsRequest$json = {
   '1': 'CarLocationStatsRequest',
   '2': [
     {'1': 'car_id', '3': 1, '4': 1, '5': 3, '10': 'carId'},
-    {'1': 'logic_location', '3': 2, '4': 1, '5': 11, '6': '.galaxis.site.health.PositionData_t', '10': 'logicLocation'},
+    {
+      '1': 'logic_location',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_t',
+      '10': 'logicLocation'
+    },
   ],
 };
 
@@ -551,7 +1121,14 @@ const CarLocationStatsResponse$json = {
   '1': 'CarLocationStatsResponse',
   '2': [
     {'1': 'car_id', '3': 1, '4': 1, '5': 3, '10': 'carId'},
-    {'1': 'logic_location', '3': 2, '4': 1, '5': 11, '6': '.galaxis.site.health.PositionData_t', '10': 'logicLocation'},
+    {
+      '1': 'logic_location',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_t',
+      '10': 'logicLocation'
+    },
     {'1': 'total_count', '3': 3, '4': 1, '5': 3, '10': 'totalCount'},
     {'1': 'normal_count', '3': 4, '4': 1, '5': 3, '10': 'normalCount'},
     {'1': 'warning_count', '3': 5, '4': 1, '5': 3, '10': 'warningCount'},
@@ -575,3 +1152,644 @@ final $typed_data.Uint8List carLocationStatsResponseDescriptor = $convert.base64
     'dGUSIQoMd2FybmluZ19yYXRlGAkgASgBUgt3YXJuaW5nUmF0ZRIdCgplcnJvcl9yYXRlGAogAS'
     'gBUgllcnJvclJhdGUSIwoNY3JpdGljYWxfcmF0ZRgLIAEoAVIMY3JpdGljYWxSYXRl');
 
+@$core.Deprecated('Use angleSampleDescriptor instead')
+const AngleSample$json = {
+  '1': 'AngleSample',
+  '2': [
+    {'1': 'car_id', '3': 1, '4': 1, '5': 3, '10': 'carId'},
+    {'1': 'car_type', '3': 2, '4': 1, '5': 9, '10': 'carType'},
+    {
+      '1': 'logic_location',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_t',
+      '10': 'logicLocation'
+    },
+    {'1': 'car_heading', '3': 4, '4': 1, '5': 1, '10': 'carHeading'},
+    {
+      '1': 'movement_direction',
+      '3': 5,
+      '4': 1,
+      '5': 1,
+      '10': 'movementDirection'
+    },
+    {'1': 'movement_speed', '3': 6, '4': 1, '5': 1, '10': 'movementSpeed'},
+    {'1': 'learned_angle', '3': 7, '4': 1, '5': 1, '10': 'learnedAngle'},
+    {'1': 'quality_score', '3': 8, '4': 1, '5': 1, '10': 'qualityScore'},
+    {
+      '1': 'timestamp',
+      '3': 9,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'timestamp'
+    },
+  ],
+};
+
+/// Descriptor for `AngleSample`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List angleSampleDescriptor = $convert.base64Decode(
+    'CgtBbmdsZVNhbXBsZRIVCgZjYXJfaWQYASABKANSBWNhcklkEhkKCGNhcl90eXBlGAIgASgJUg'
+    'djYXJUeXBlEkoKDmxvZ2ljX2xvY2F0aW9uGAMgASgLMiMuZ2FsYXhpcy5zaXRlLmhlYWx0aC5Q'
+    'b3NpdGlvbkRhdGFfdFINbG9naWNMb2NhdGlvbhIfCgtjYXJfaGVhZGluZxgEIAEoAVIKY2FySG'
+    'VhZGluZxItChJtb3ZlbWVudF9kaXJlY3Rpb24YBSABKAFSEW1vdmVtZW50RGlyZWN0aW9uEiUK'
+    'Dm1vdmVtZW50X3NwZWVkGAYgASgBUg1tb3ZlbWVudFNwZWVkEiMKDWxlYXJuZWRfYW5nbGUYBy'
+    'ABKAFSDGxlYXJuZWRBbmdsZRIjCg1xdWFsaXR5X3Njb3JlGAggASgBUgxxdWFsaXR5U2NvcmUS'
+    'OAoJdGltZXN0YW1wGAkgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcFIJdGltZXN0YW'
+    '1w');
+
+@$core.Deprecated('Use localAngleLearningDataDescriptor instead')
+const LocalAngleLearningData$json = {
+  '1': 'LocalAngleLearningData',
+  '2': [
+    {'1': 'car_id', '3': 1, '4': 1, '5': 3, '10': 'carId'},
+    {
+      '1': 'logic_location',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_t',
+      '10': 'logicLocation'
+    },
+    {'1': 'learned_angle', '3': 3, '4': 1, '5': 1, '10': 'learnedAngle'},
+    {'1': 'confidence', '3': 4, '4': 1, '5': 1, '10': 'confidence'},
+    {'1': 'sample_count', '3': 5, '4': 1, '5': 5, '10': 'sampleCount'},
+    {
+      '1': 'last_updated',
+      '3': 6,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'lastUpdated'
+    },
+  ],
+};
+
+/// Descriptor for `LocalAngleLearningData`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List localAngleLearningDataDescriptor = $convert.base64Decode(
+    'ChZMb2NhbEFuZ2xlTGVhcm5pbmdEYXRhEhUKBmNhcl9pZBgBIAEoA1IFY2FySWQSSgoObG9naW'
+    'NfbG9jYXRpb24YAiABKAsyIy5nYWxheGlzLnNpdGUuaGVhbHRoLlBvc2l0aW9uRGF0YV90Ug1s'
+    'b2dpY0xvY2F0aW9uEiMKDWxlYXJuZWRfYW5nbGUYAyABKAFSDGxlYXJuZWRBbmdsZRIeCgpjb2'
+    '5maWRlbmNlGAQgASgBUgpjb25maWRlbmNlEiEKDHNhbXBsZV9jb3VudBgFIAEoBVILc2FtcGxl'
+    'Q291bnQSPQoMbGFzdF91cGRhdGVkGAYgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcF'
+    'ILbGFzdFVwZGF0ZWQ=');
+
+@$core.Deprecated('Use globalAngleLearningResultDescriptor instead')
+const GlobalAngleLearningResult$json = {
+  '1': 'GlobalAngleLearningResult',
+  '2': [
+    {
+      '1': 'logic_location',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_t',
+      '10': 'logicLocation'
+    },
+    {'1': 'learned_angle', '3': 2, '4': 1, '5': 1, '10': 'learnedAngle'},
+    {'1': 'confidence', '3': 3, '4': 1, '5': 1, '10': 'confidence'},
+    {
+      '1': 'status',
+      '3': 4,
+      '4': 1,
+      '5': 14,
+      '6': '.galaxis.site.health.LearningStatus',
+      '10': 'status'
+    },
+    {'1': 'sample_count', '3': 5, '4': 1, '5': 5, '10': 'sampleCount'},
+    {'1': 'vehicle_count', '3': 6, '4': 1, '5': 5, '10': 'vehicleCount'},
+    {'1': 'std_deviation', '3': 7, '4': 1, '5': 1, '10': 'stdDeviation'},
+    {
+      '1': 'samples',
+      '3': 8,
+      '4': 3,
+      '5': 11,
+      '6': '.galaxis.site.health.AngleSample',
+      '10': 'samples'
+    },
+    {
+      '1': 'last_updated',
+      '3': 9,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'lastUpdated'
+    },
+  ],
+};
+
+/// Descriptor for `GlobalAngleLearningResult`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List globalAngleLearningResultDescriptor = $convert.base64Decode(
+    'ChlHbG9iYWxBbmdsZUxlYXJuaW5nUmVzdWx0EkoKDmxvZ2ljX2xvY2F0aW9uGAEgASgLMiMuZ2'
+    'FsYXhpcy5zaXRlLmhlYWx0aC5Qb3NpdGlvbkRhdGFfdFINbG9naWNMb2NhdGlvbhIjCg1sZWFy'
+    'bmVkX2FuZ2xlGAIgASgBUgxsZWFybmVkQW5nbGUSHgoKY29uZmlkZW5jZRgDIAEoAVIKY29uZm'
+    'lkZW5jZRI7CgZzdGF0dXMYBCABKA4yIy5nYWxheGlzLnNpdGUuaGVhbHRoLkxlYXJuaW5nU3Rh'
+    'dHVzUgZzdGF0dXMSIQoMc2FtcGxlX2NvdW50GAUgASgFUgtzYW1wbGVDb3VudBIjCg12ZWhpY2'
+    'xlX2NvdW50GAYgASgFUgx2ZWhpY2xlQ291bnQSIwoNc3RkX2RldmlhdGlvbhgHIAEoAVIMc3Rk'
+    'RGV2aWF0aW9uEjoKB3NhbXBsZXMYCCADKAsyIC5nYWxheGlzLnNpdGUuaGVhbHRoLkFuZ2xlU2'
+    'FtcGxlUgdzYW1wbGVzEj0KDGxhc3RfdXBkYXRlZBgJIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5U'
+    'aW1lc3RhbXBSC2xhc3RVcGRhdGVk');
+
+@$core.Deprecated('Use reportAngleLearningRequestDescriptor instead')
+const ReportAngleLearningRequest$json = {
+  '1': 'ReportAngleLearningRequest',
+  '2': [
+    {'1': 'car_id', '3': 1, '4': 1, '5': 3, '10': 'carId'},
+    {'1': 'car_type', '3': 2, '4': 1, '5': 9, '10': 'carType'},
+    {
+      '1': 'logic_location',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_t',
+      '10': 'logicLocation'
+    },
+    {'1': 'car_heading', '3': 4, '4': 1, '5': 1, '10': 'carHeading'},
+    {
+      '1': 'movement_direction',
+      '3': 5,
+      '4': 1,
+      '5': 1,
+      '10': 'movementDirection'
+    },
+    {'1': 'movement_speed', '3': 6, '4': 1, '5': 1, '10': 'movementSpeed'},
+    {'1': 'learned_angle', '3': 7, '4': 1, '5': 1, '10': 'learnedAngle'},
+    {'1': 'clarity', '3': 8, '4': 1, '5': 1, '10': 'clarity'},
+    {
+      '1': 'marker_health_status',
+      '3': 9,
+      '4': 1,
+      '5': 14,
+      '6': '.galaxis.site.health.HealthStatus',
+      '10': 'markerHealthStatus'
+    },
+  ],
+};
+
+/// Descriptor for `ReportAngleLearningRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List reportAngleLearningRequestDescriptor = $convert.base64Decode(
+    'ChpSZXBvcnRBbmdsZUxlYXJuaW5nUmVxdWVzdBIVCgZjYXJfaWQYASABKANSBWNhcklkEhkKCG'
+    'Nhcl90eXBlGAIgASgJUgdjYXJUeXBlEkoKDmxvZ2ljX2xvY2F0aW9uGAMgASgLMiMuZ2FsYXhp'
+    'cy5zaXRlLmhlYWx0aC5Qb3NpdGlvbkRhdGFfdFINbG9naWNMb2NhdGlvbhIfCgtjYXJfaGVhZG'
+    'luZxgEIAEoAVIKY2FySGVhZGluZxItChJtb3ZlbWVudF9kaXJlY3Rpb24YBSABKAFSEW1vdmVt'
+    'ZW50RGlyZWN0aW9uEiUKDm1vdmVtZW50X3NwZWVkGAYgASgBUg1tb3ZlbWVudFNwZWVkEiMKDW'
+    'xlYXJuZWRfYW5nbGUYByABKAFSDGxlYXJuZWRBbmdsZRIYCgdjbGFyaXR5GAggASgBUgdjbGFy'
+    'aXR5ElMKFG1hcmtlcl9oZWFsdGhfc3RhdHVzGAkgASgOMiEuZ2FsYXhpcy5zaXRlLmhlYWx0aC'
+    '5IZWFsdGhTdGF0dXNSEm1hcmtlckhlYWx0aFN0YXR1cw==');
+
+@$core.Deprecated('Use reportAngleLearningResponseDescriptor instead')
+const ReportAngleLearningResponse$json = {
+  '1': 'ReportAngleLearningResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    {
+      '1': 'global_result',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.GlobalAngleLearningResult',
+      '9': 0,
+      '10': 'globalResult',
+      '17': true
+    },
+  ],
+  '8': [
+    {'1': '_global_result'},
+  ],
+};
+
+/// Descriptor for `ReportAngleLearningResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List reportAngleLearningResponseDescriptor = $convert.base64Decode(
+    'ChtSZXBvcnRBbmdsZUxlYXJuaW5nUmVzcG9uc2USGAoHc3VjY2VzcxgBIAEoCFIHc3VjY2Vzcx'
+    'IYCgdtZXNzYWdlGAIgASgJUgdtZXNzYWdlElgKDWdsb2JhbF9yZXN1bHQYAyABKAsyLi5nYWxh'
+    'eGlzLnNpdGUuaGVhbHRoLkdsb2JhbEFuZ2xlTGVhcm5pbmdSZXN1bHRIAFIMZ2xvYmFsUmVzdW'
+    'x0iAEBQhAKDl9nbG9iYWxfcmVzdWx0');
+
+@$core.Deprecated('Use queryAngleLearningRequestDescriptor instead')
+const QueryAngleLearningRequest$json = {
+  '1': 'QueryAngleLearningRequest',
+  '2': [
+    {'1': 'car_id', '3': 1, '4': 1, '5': 3, '9': 0, '10': 'carId', '17': true},
+    {
+      '1': 'logic_location',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_t',
+      '9': 1,
+      '10': 'logicLocation',
+      '17': true
+    },
+    {'1': 'include_samples', '3': 3, '4': 1, '5': 8, '10': 'includeSamples'},
+  ],
+  '8': [
+    {'1': '_car_id'},
+    {'1': '_logic_location'},
+  ],
+};
+
+/// Descriptor for `QueryAngleLearningRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List queryAngleLearningRequestDescriptor = $convert.base64Decode(
+    'ChlRdWVyeUFuZ2xlTGVhcm5pbmdSZXF1ZXN0EhoKBmNhcl9pZBgBIAEoA0gAUgVjYXJJZIgBAR'
+    'JPCg5sb2dpY19sb2NhdGlvbhgCIAEoCzIjLmdhbGF4aXMuc2l0ZS5oZWFsdGguUG9zaXRpb25E'
+    'YXRhX3RIAVINbG9naWNMb2NhdGlvbogBARInCg9pbmNsdWRlX3NhbXBsZXMYAyABKAhSDmluY2'
+    'x1ZGVTYW1wbGVzQgkKB19jYXJfaWRCEQoPX2xvZ2ljX2xvY2F0aW9u');
+
+@$core.Deprecated('Use queryAngleLearningResponseDescriptor instead')
+const QueryAngleLearningResponse$json = {
+  '1': 'QueryAngleLearningResponse',
+  '2': [
+    {
+      '1': 'local_learning',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.LocalAngleLearningData',
+      '9': 0,
+      '10': 'localLearning',
+      '17': true
+    },
+    {
+      '1': 'global_learning',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.GlobalAngleLearningResult',
+      '9': 1,
+      '10': 'globalLearning',
+      '17': true
+    },
+    {
+      '1': 'final_angle',
+      '3': 3,
+      '4': 1,
+      '5': 1,
+      '9': 2,
+      '10': 'finalAngle',
+      '17': true
+    },
+    {
+      '1': 'local_weight',
+      '3': 4,
+      '4': 1,
+      '5': 1,
+      '9': 3,
+      '10': 'localWeight',
+      '17': true
+    },
+    {
+      '1': 'global_weight',
+      '3': 5,
+      '4': 1,
+      '5': 1,
+      '9': 4,
+      '10': 'globalWeight',
+      '17': true
+    },
+  ],
+  '8': [
+    {'1': '_local_learning'},
+    {'1': '_global_learning'},
+    {'1': '_final_angle'},
+    {'1': '_local_weight'},
+    {'1': '_global_weight'},
+  ],
+};
+
+/// Descriptor for `QueryAngleLearningResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List queryAngleLearningResponseDescriptor = $convert.base64Decode(
+    'ChpRdWVyeUFuZ2xlTGVhcm5pbmdSZXNwb25zZRJXCg5sb2NhbF9sZWFybmluZxgBIAEoCzIrLm'
+    'dhbGF4aXMuc2l0ZS5oZWFsdGguTG9jYWxBbmdsZUxlYXJuaW5nRGF0YUgAUg1sb2NhbExlYXJu'
+    'aW5niAEBElwKD2dsb2JhbF9sZWFybmluZxgCIAEoCzIuLmdhbGF4aXMuc2l0ZS5oZWFsdGguR2'
+    'xvYmFsQW5nbGVMZWFybmluZ1Jlc3VsdEgBUg5nbG9iYWxMZWFybmluZ4gBARIkCgtmaW5hbF9h'
+    'bmdsZRgDIAEoAUgCUgpmaW5hbEFuZ2xliAEBEiYKDGxvY2FsX3dlaWdodBgEIAEoAUgDUgtsb2'
+    'NhbFdlaWdodIgBARIoCg1nbG9iYWxfd2VpZ2h0GAUgASgBSARSDGdsb2JhbFdlaWdodIgBAUIR'
+    'Cg9fbG9jYWxfbGVhcm5pbmdCEgoQX2dsb2JhbF9sZWFybmluZ0IOCgxfZmluYWxfYW5nbGVCDw'
+    'oNX2xvY2FsX3dlaWdodEIQCg5fZ2xvYmFsX3dlaWdodA==');
+
+@$core.Deprecated('Use batchQueryAngleLearningRequestDescriptor instead')
+const BatchQueryAngleLearningRequest$json = {
+  '1': 'BatchQueryAngleLearningRequest',
+  '2': [
+    {
+      '1': 'logic_locations',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_t',
+      '10': 'logicLocations'
+    },
+    {'1': 'car_id', '3': 2, '4': 1, '5': 3, '9': 0, '10': 'carId', '17': true},
+  ],
+  '8': [
+    {'1': '_car_id'},
+  ],
+};
+
+/// Descriptor for `BatchQueryAngleLearningRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List batchQueryAngleLearningRequestDescriptor =
+    $convert.base64Decode(
+        'Ch5CYXRjaFF1ZXJ5QW5nbGVMZWFybmluZ1JlcXVlc3QSTAoPbG9naWNfbG9jYXRpb25zGAEgAy'
+        'gLMiMuZ2FsYXhpcy5zaXRlLmhlYWx0aC5Qb3NpdGlvbkRhdGFfdFIObG9naWNMb2NhdGlvbnMS'
+        'GgoGY2FyX2lkGAIgASgDSABSBWNhcklkiAEBQgkKB19jYXJfaWQ=');
+
+@$core.Deprecated('Use batchQueryAngleLearningResponseDescriptor instead')
+const BatchQueryAngleLearningResponse$json = {
+  '1': 'BatchQueryAngleLearningResponse',
+  '2': [
+    {
+      '1': 'results',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.galaxis.site.health.BatchQueryAngleLearningResponse.ResultsEntry',
+      '10': 'results'
+    },
+  ],
+  '3': [BatchQueryAngleLearningResponse_ResultsEntry$json],
+};
+
+@$core.Deprecated('Use batchQueryAngleLearningResponseDescriptor instead')
+const BatchQueryAngleLearningResponse_ResultsEntry$json = {
+  '1': 'ResultsEntry',
+  '2': [
+    {'1': 'key', '3': 1, '4': 1, '5': 9, '10': 'key'},
+    {
+      '1': 'value',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.QueryAngleLearningResponse',
+      '10': 'value'
+    },
+  ],
+  '7': {'7': true},
+};
+
+/// Descriptor for `BatchQueryAngleLearningResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List batchQueryAngleLearningResponseDescriptor = $convert.base64Decode(
+    'Ch9CYXRjaFF1ZXJ5QW5nbGVMZWFybmluZ1Jlc3BvbnNlElsKB3Jlc3VsdHMYASADKAsyQS5nYW'
+    'xheGlzLnNpdGUuaGVhbHRoLkJhdGNoUXVlcnlBbmdsZUxlYXJuaW5nUmVzcG9uc2UuUmVzdWx0'
+    'c0VudHJ5UgdyZXN1bHRzGmsKDFJlc3VsdHNFbnRyeRIQCgNrZXkYASABKAlSA2tleRJFCgV2YW'
+    'x1ZRgCIAEoCzIvLmdhbGF4aXMuc2l0ZS5oZWFsdGguUXVlcnlBbmdsZUxlYXJuaW5nUmVzcG9u'
+    'c2VSBXZhbHVlOgI4AQ==');
+
+@$core.Deprecated('Use resetAngleLearningRequestDescriptor instead')
+const ResetAngleLearningRequest$json = {
+  '1': 'ResetAngleLearningRequest',
+  '2': [
+    {'1': 'car_id', '3': 1, '4': 1, '5': 3, '9': 0, '10': 'carId', '17': true},
+    {
+      '1': 'logic_location',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_t',
+      '9': 1,
+      '10': 'logicLocation',
+      '17': true
+    },
+    {'1': 'reset_all', '3': 3, '4': 1, '5': 8, '10': 'resetAll'},
+  ],
+  '8': [
+    {'1': '_car_id'},
+    {'1': '_logic_location'},
+  ],
+};
+
+/// Descriptor for `ResetAngleLearningRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List resetAngleLearningRequestDescriptor = $convert.base64Decode(
+    'ChlSZXNldEFuZ2xlTGVhcm5pbmdSZXF1ZXN0EhoKBmNhcl9pZBgBIAEoA0gAUgVjYXJJZIgBAR'
+    'JPCg5sb2dpY19sb2NhdGlvbhgCIAEoCzIjLmdhbGF4aXMuc2l0ZS5oZWFsdGguUG9zaXRpb25E'
+    'YXRhX3RIAVINbG9naWNMb2NhdGlvbogBARIbCglyZXNldF9hbGwYAyABKAhSCHJlc2V0QWxsQg'
+    'kKB19jYXJfaWRCEQoPX2xvZ2ljX2xvY2F0aW9u');
+
+@$core.Deprecated('Use resetAngleLearningResponseDescriptor instead')
+const ResetAngleLearningResponse$json = {
+  '1': 'ResetAngleLearningResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    {'1': 'reset_count', '3': 3, '4': 1, '5': 5, '10': 'resetCount'},
+  ],
+};
+
+/// Descriptor for `ResetAngleLearningResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List resetAngleLearningResponseDescriptor =
+    $convert.base64Decode(
+        'ChpSZXNldEFuZ2xlTGVhcm5pbmdSZXNwb25zZRIYCgdzdWNjZXNzGAEgASgIUgdzdWNjZXNzEh'
+        'gKB21lc3NhZ2UYAiABKAlSB21lc3NhZ2USHwoLcmVzZXRfY291bnQYAyABKAVSCnJlc2V0Q291'
+        'bnQ=');
+
+@$core.Deprecated('Use cleanupAngleLearningRequestDescriptor instead')
+const CleanupAngleLearningRequest$json = {
+  '1': 'CleanupAngleLearningRequest',
+  '2': [
+    {'1': 'car_id', '3': 1, '4': 1, '5': 3, '9': 0, '10': 'carId', '17': true},
+    {
+      '1': 'logic_location',
+      '3': 2,
+      '4': 1,
+      '5': 11,
+      '6': '.galaxis.site.health.PositionData_t',
+      '9': 1,
+      '10': 'logicLocation',
+      '17': true
+    },
+    {
+      '1': 'before_time',
+      '3': 3,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '9': 2,
+      '10': 'beforeTime',
+      '17': true
+    },
+    {
+      '1': 'status',
+      '3': 4,
+      '4': 1,
+      '5': 14,
+      '6': '.galaxis.site.health.LearningStatus',
+      '9': 3,
+      '10': 'status',
+      '17': true
+    },
+    {
+      '1': 'max_confidence',
+      '3': 5,
+      '4': 1,
+      '5': 1,
+      '9': 4,
+      '10': 'maxConfidence',
+      '17': true
+    },
+    {
+      '1': 'min_std_deviation',
+      '3': 6,
+      '4': 1,
+      '5': 1,
+      '9': 5,
+      '10': 'minStdDeviation',
+      '17': true
+    },
+    {'1': 'cleanup_all', '3': 7, '4': 1, '5': 8, '10': 'cleanupAll'},
+    {
+      '1': 'cleanup_local_only',
+      '3': 8,
+      '4': 1,
+      '5': 8,
+      '10': 'cleanupLocalOnly'
+    },
+    {
+      '1': 'cleanup_global_only',
+      '3': 9,
+      '4': 1,
+      '5': 8,
+      '10': 'cleanupGlobalOnly'
+    },
+  ],
+  '8': [
+    {'1': '_car_id'},
+    {'1': '_logic_location'},
+    {'1': '_before_time'},
+    {'1': '_status'},
+    {'1': '_max_confidence'},
+    {'1': '_min_std_deviation'},
+  ],
+};
+
+/// Descriptor for `CleanupAngleLearningRequest`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cleanupAngleLearningRequestDescriptor = $convert.base64Decode(
+    'ChtDbGVhbnVwQW5nbGVMZWFybmluZ1JlcXVlc3QSGgoGY2FyX2lkGAEgASgDSABSBWNhcklkiA'
+    'EBEk8KDmxvZ2ljX2xvY2F0aW9uGAIgASgLMiMuZ2FsYXhpcy5zaXRlLmhlYWx0aC5Qb3NpdGlv'
+    'bkRhdGFfdEgBUg1sb2dpY0xvY2F0aW9uiAEBEkAKC2JlZm9yZV90aW1lGAMgASgLMhouZ29vZ2'
+    'xlLnByb3RvYnVmLlRpbWVzdGFtcEgCUgpiZWZvcmVUaW1liAEBEkAKBnN0YXR1cxgEIAEoDjIj'
+    'LmdhbGF4aXMuc2l0ZS5oZWFsdGguTGVhcm5pbmdTdGF0dXNIA1IGc3RhdHVziAEBEioKDm1heF'
+    '9jb25maWRlbmNlGAUgASgBSARSDW1heENvbmZpZGVuY2WIAQESLwoRbWluX3N0ZF9kZXZpYXRp'
+    'b24YBiABKAFIBVIPbWluU3RkRGV2aWF0aW9uiAEBEh8KC2NsZWFudXBfYWxsGAcgASgIUgpjbG'
+    'VhbnVwQWxsEiwKEmNsZWFudXBfbG9jYWxfb25seRgIIAEoCFIQY2xlYW51cExvY2FsT25seRIu'
+    'ChNjbGVhbnVwX2dsb2JhbF9vbmx5GAkgASgIUhFjbGVhbnVwR2xvYmFsT25seUIJCgdfY2FyX2'
+    'lkQhEKD19sb2dpY19sb2NhdGlvbkIOCgxfYmVmb3JlX3RpbWVCCQoHX3N0YXR1c0IRCg9fbWF4'
+    'X2NvbmZpZGVuY2VCFAoSX21pbl9zdGRfZGV2aWF0aW9u');
+
+@$core.Deprecated('Use cleanupAngleLearningResponseDescriptor instead')
+const CleanupAngleLearningResponse$json = {
+  '1': 'CleanupAngleLearningResponse',
+  '2': [
+    {'1': 'success', '3': 1, '4': 1, '5': 8, '10': 'success'},
+    {'1': 'message', '3': 2, '4': 1, '5': 9, '10': 'message'},
+    {
+      '1': 'local_cleaned_count',
+      '3': 3,
+      '4': 1,
+      '5': 5,
+      '10': 'localCleanedCount'
+    },
+    {
+      '1': 'global_cleaned_count',
+      '3': 4,
+      '4': 1,
+      '5': 5,
+      '10': 'globalCleanedCount'
+    },
+    {
+      '1': 'samples_cleaned_count',
+      '3': 5,
+      '4': 1,
+      '5': 5,
+      '10': 'samplesCleanedCount'
+    },
+  ],
+};
+
+/// Descriptor for `CleanupAngleLearningResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List cleanupAngleLearningResponseDescriptor = $convert.base64Decode(
+    'ChxDbGVhbnVwQW5nbGVMZWFybmluZ1Jlc3BvbnNlEhgKB3N1Y2Nlc3MYASABKAhSB3N1Y2Nlc3'
+    'MSGAoHbWVzc2FnZRgCIAEoCVIHbWVzc2FnZRIuChNsb2NhbF9jbGVhbmVkX2NvdW50GAMgASgF'
+    'UhFsb2NhbENsZWFuZWRDb3VudBIwChRnbG9iYWxfY2xlYW5lZF9jb3VudBgEIAEoBVISZ2xvYm'
+    'FsQ2xlYW5lZENvdW50EjIKFXNhbXBsZXNfY2xlYW5lZF9jb3VudBgFIAEoBVITc2FtcGxlc0Ns'
+    'ZWFuZWRDb3VudA==');
+
+@$core.Deprecated('Use angleLearningStatisticsDescriptor instead')
+const AngleLearningStatistics$json = {
+  '1': 'AngleLearningStatistics',
+  '2': [
+    {'1': 'total_locations', '3': 1, '4': 1, '5': 5, '10': 'totalLocations'},
+    {
+      '1': 'completed_locations',
+      '3': 2,
+      '4': 1,
+      '5': 5,
+      '10': 'completedLocations'
+    },
+    {
+      '1': 'collecting_locations',
+      '3': 3,
+      '4': 1,
+      '5': 5,
+      '10': 'collectingLocations'
+    },
+    {
+      '1': 'need_relearn_locations',
+      '3': 4,
+      '4': 1,
+      '5': 5,
+      '10': 'needRelearnLocations'
+    },
+    {'1': 'total_samples', '3': 5, '4': 1, '5': 5, '10': 'totalSamples'},
+    {'1': 'total_vehicles', '3': 6, '4': 1, '5': 5, '10': 'totalVehicles'},
+    {
+      '1': 'average_confidence',
+      '3': 7,
+      '4': 1,
+      '5': 1,
+      '10': 'averageConfidence'
+    },
+    {
+      '1': 'last_updated',
+      '3': 8,
+      '4': 1,
+      '5': 11,
+      '6': '.google.protobuf.Timestamp',
+      '10': 'lastUpdated'
+    },
+  ],
+};
+
+/// Descriptor for `AngleLearningStatistics`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List angleLearningStatisticsDescriptor = $convert.base64Decode(
+    'ChdBbmdsZUxlYXJuaW5nU3RhdGlzdGljcxInCg90b3RhbF9sb2NhdGlvbnMYASABKAVSDnRvdG'
+    'FsTG9jYXRpb25zEi8KE2NvbXBsZXRlZF9sb2NhdGlvbnMYAiABKAVSEmNvbXBsZXRlZExvY2F0'
+    'aW9ucxIxChRjb2xsZWN0aW5nX2xvY2F0aW9ucxgDIAEoBVITY29sbGVjdGluZ0xvY2F0aW9ucx'
+    'I0ChZuZWVkX3JlbGVhcm5fbG9jYXRpb25zGAQgASgFUhRuZWVkUmVsZWFybkxvY2F0aW9ucxIj'
+    'Cg10b3RhbF9zYW1wbGVzGAUgASgFUgx0b3RhbFNhbXBsZXMSJQoOdG90YWxfdmVoaWNsZXMYBi'
+    'ABKAVSDXRvdGFsVmVoaWNsZXMSLQoSYXZlcmFnZV9jb25maWRlbmNlGAcgASgBUhFhdmVyYWdl'
+    'Q29uZmlkZW5jZRI9CgxsYXN0X3VwZGF0ZWQYCCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZX'
+    'N0YW1wUgtsYXN0VXBkYXRlZA==');
+
+@$core.Deprecated('Use angleLearningLocationsResponseDescriptor instead')
+const AngleLearningLocationsResponse$json = {
+  '1': 'AngleLearningLocationsResponse',
+  '2': [
+    {
+      '1': 'locations',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.galaxis.site.health.GlobalAngleLearningResult',
+      '10': 'locations'
+    },
+    {'1': 'total_count', '3': 2, '4': 1, '5': 5, '10': 'totalCount'},
+  ],
+};
+
+/// Descriptor for `AngleLearningLocationsResponse`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List angleLearningLocationsResponseDescriptor =
+    $convert.base64Decode(
+        'Ch5BbmdsZUxlYXJuaW5nTG9jYXRpb25zUmVzcG9uc2USTAoJbG9jYXRpb25zGAEgAygLMi4uZ2'
+        'FsYXhpcy5zaXRlLmhlYWx0aC5HbG9iYWxBbmdsZUxlYXJuaW5nUmVzdWx0Uglsb2NhdGlvbnMS'
+        'HwoLdG90YWxfY291bnQYAiABKAVSCnRvdGFsQ291bnQ=');
