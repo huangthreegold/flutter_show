@@ -134,6 +134,62 @@ message HealthInfoQueryResponse {
   repeated GoodsSlotHealthInfo goods_slot_healths = 3;
 }
 
+// 二维码历史检测记录（单个位置的完整历史）
+message MarkerDetectionHistoryRecord {
+  int64 node_id = 1;
+  PositionData_t logic_location = 2;               // 逻辑坐标
+  string expected_code = 3;                        // 期望的二维码
+  HealthStatus overall_status = 4;                 // 综合健康状态
+  google.protobuf.Timestamp last_updated = 5;      // 最后更新时间
+  repeated CarDetectionHistory car_histories = 6;  // 每台车的检测历史
+}
+
+// 单台车的检测历史
+message CarDetectionHistory {
+  int64 car_id = 1;
+  repeated MarkerHealthInfo detections = 2;  // 该车的所有检测记录（按时间排序）
+}
+
+// 二维码历史检测查询请求
+message MarkerDetectionHistoryRequest {
+  optional PositionData_t logic_location = 1;         // 查询特定逻辑位置（不填则返回所有位置）
+  optional int64 car_id = 2;                          // 只查询特定车辆的数据
+  optional int32 limit = 3;                           // 每台车最多返回多少条记录（默认返回所有）
+  optional google.protobuf.Timestamp start_time = 4;  // 时间范围过滤
+  optional google.protobuf.Timestamp end_time = 5;
+}
+
+// 二维码历史检测查询响应
+message MarkerDetectionHistoryResponse {
+  repeated MarkerDetectionHistoryRecord records = 1;
+}
+
+// 综合状态信息（不含具体检测数据，只有状态汇总）
+message OverallStatusInfo {
+  PositionData_t logic_location = 1;           // 逻辑坐标
+  int64 node_id = 2;                           // 节点ID
+  HealthStatus overall_status = 3;             // 综合健康状态
+  google.protobuf.Timestamp last_updated = 4;  // 最后更新时间
+  int32 total_detections = 5;                  // 总检测次数
+  int32 participating_cars = 6;                // 参与检测的车辆数
+  string expected_code = 7;                    // 期望的二维码（仅二维码）
+  double average_deviation = 8;                // 平均偏差值（仅地面）
+  NodeDeviationData deviation_data = 9;        // 平均偏差数据（仅二维码）
+}
+
+// 综合状态查询响应
+message OverallStatusQueryResponse {
+  repeated OverallStatusInfo marker_statuses = 1;  // 二维码综合状态
+  repeated OverallStatusInfo ground_statuses = 2;  // 地面综合状态
+}
+
+// 最新检测数据查询响应（纯最新数据，不含综合状态计算）
+message LatestDetectionQueryResponse {
+  repeated MarkerHealthInfo marker_detections = 1;         // 最新的二维码检测
+  repeated GroundHealthInfo ground_detections = 2;         // 最新的地面检测
+  repeated GoodsSlotHealthInfo goods_slot_detections = 3;  // 最新的货架检测
+}
+
 // 健康统计信息
 message HealthStatistics {
   // 二维码节点统计
@@ -261,6 +317,25 @@ message CarLocationStatsResponse {
   double warning_rate = 9;            // 警告率 (0.0-100.0)
   double error_rate = 10;             // 错误率 (0.0-100.0)
   double critical_rate = 11;          // 严重率 (0.0-100.0)
+}
+
+// 手动添加二维码异常信息请求
+message AddMarkerExceptionRequest {
+  optional int64 car_id = 1;                 // 车辆ID（可选，0表示手动添加）
+  PositionData_t logic_location = 2;         // 逻辑坐标
+  string exception_type = 3;                 // 异常类型描述
+  optional string detected_marker_code = 4;  // 检测到的二维码
+  optional double decode_success_rate = 5;   // 解码成功率 (0.0-1.0)
+  optional NodeDeviationData deviation = 6;  // 位置偏差（可选）
+  MarkerIssueType issue_type = 7;            // 问题类型
+  HealthStatus health_status = 8;            // 健康状态
+  string description = 9;                    // 问题描述
+}
+
+// 手动添加二维码异常信息响应
+message AddMarkerExceptionResponse {
+  bool success = 1;    // 是否成功
+  string message = 2;  // 响应消息
 }
 
 // ============= 二维码角度学习相关消息 =============
@@ -417,8 +492,17 @@ service SiteHealthService {
   // 批量上报场地健康数据
   rpc BatchReportSiteHealthInfo(stream SiteHealthInfo) returns (google.protobuf.Empty);
 
-  // 查询健康信息
+  // 查询健康信息（包含最新检测+综合状态，原有接口保持兼容）
   rpc QueryHealthInfo(HealthInfoQueryRequest) returns (HealthInfoQueryResponse);
+
+  // 查询综合状态（只返回综合判定结果，不含具体检测数据）
+  rpc QueryOverallStatus(HealthInfoQueryRequest) returns (OverallStatusQueryResponse);
+
+  // 查询最新检测数据（只返回最新一次检测，health_status是单次检测状态）
+  rpc QueryLatestDetection(HealthInfoQueryRequest) returns (LatestDetectionQueryResponse);
+
+  // 查询二维码历史检测记录（包含所有车辆的完整历史）
+  rpc QueryMarkerDetectionHistory(MarkerDetectionHistoryRequest) returns (MarkerDetectionHistoryResponse);
 
   // 获取健康统计信息
   rpc GetHealthStatistics(google.protobuf.Empty) returns (HealthStatistics);
@@ -440,6 +524,9 @@ service SiteHealthService {
 
   // 重置某个位置的健康状态数据（用于重新检测）
   rpc ResetLocationHealthData(HealthInfoQueryRequest) returns (DataCleanupResponse);
+
+  // 手动添加二维码异常信息（可被查询接口查出）
+  rpc AddMarkerException(AddMarkerExceptionRequest) returns (AddMarkerExceptionResponse);
 
   // ============= 二维码角度学习接口 =============
 

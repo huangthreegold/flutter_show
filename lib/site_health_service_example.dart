@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:fixnum/fixnum.dart';
 import 'site_health_grpc_service.dart';
 import 'site_health_models.dart';
+import 'generated/types.pb.dart' as types;
 
 /// 场地健康服务使用示例
 ///
@@ -959,7 +960,7 @@ class _MarkerPositionMapState extends State<MarkerPositionMap> {
         builder: (context) => AlertDialog(
           title: const Text('确认重置'),
           content: Text(
-            '确定要将节点 ${marker.nodeId} 的健康状态重置为正常吗？\n\n'
+            '确定要将位置 (${marker.nodeLogicLocation?.x ?? 0}, ${marker.nodeLogicLocation?.y ?? 0}) 的健康状态重置为正常吗？\n\n'
             '这将清除该位置的所有异常记录。',
           ),
           actions: [
@@ -986,10 +987,14 @@ class _MarkerPositionMapState extends State<MarkerPositionMap> {
       // 调用 gRPC 服务重置健康数据
       if (widget.grpcService != null) {
         try {
-          // 导入需要的类型
-          final nodeIdInt64 = Int64(marker.nodeId);
+          // 将 PositionData 转换为 PositionData_t (protobuf 类型)
+          final logicLoc = types.PositionData_t()
+            ..localX = Int64(marker.nodeLogicLocation?.x ?? 0)
+            ..localY = Int64(marker.nodeLogicLocation?.y ?? 0);
 
-          await widget.grpcService.resetLocationHealthData(nodeId: nodeIdInt64);
+          await widget.grpcService.resetLocationHealthData(
+            logicLocation: logicLoc,
+          );
         } catch (e) {
           print('调用 resetLocationHealthData 失败: $e');
           // 如果失败，模拟延迟以显示操作完成

@@ -9,6 +9,8 @@ import 'grpc_config.dart';
 import 'generated/site_health.pbgrpc.dart' as pb;
 import 'generated/site_health.pbenum.dart';
 import 'angle_learning_page.dart';
+import 'package:protobuf/well_known_types/google/protobuf/timestamp.pb.dart'
+    as $3;
 
 void main() {
   runApp(const SiteHealthApp());
@@ -577,8 +579,8 @@ class _OverviewPageState extends State<OverviewPage> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            FutureBuilder<pb.HealthInfoQueryResponse>(
-              future: widget.grpcService.queryHealthInfo(),
+            FutureBuilder<pb.OverallStatusQueryResponse>(
+              future: widget.grpcService.queryOverallStatus(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(
@@ -595,84 +597,64 @@ class _OverviewPageState extends State<OverviewPage> {
 
                 final response = snapshot.data!;
 
-                // 统计二维码异常类型
-                final markerIssues = <String, List<pb.MarkerHealthInfo>>{};
-                for (var marker in response.markerHealths) {
-                  if (marker.healthStatus !=
+                // 统计二维码异常状态（按状态分组）
+                final markerStatusMap =
+                    <HealthStatus, List<pb.OverallStatusInfo>>{};
+                for (var status in response.markerStatuses) {
+                  if (status.overallStatus !=
                       HealthStatus.HEALTH_STATUS_NORMAL) {
-                    final issueType = _getMarkerIssueTypeName(marker.issueType);
-                    markerIssues.putIfAbsent(issueType, () => []).add(marker);
+                    markerStatusMap
+                        .putIfAbsent(status.overallStatus, () => [])
+                        .add(status);
                   }
                 }
 
-                // 统计地面异常类型
-                final groundIssues = <String, List<pb.GroundHealthInfo>>{};
-                for (var ground in response.groundHealths) {
-                  if (ground.healthStatus !=
+                // 统计地面异常状态（按状态分组）
+                final groundStatusMap =
+                    <HealthStatus, List<pb.OverallStatusInfo>>{};
+                for (var status in response.groundStatuses) {
+                  if (status.overallStatus !=
                       HealthStatus.HEALTH_STATUS_NORMAL) {
-                    final issueType = _getGroundIssueTypeName(ground.issueType);
-                    groundIssues.putIfAbsent(issueType, () => []).add(ground);
+                    groundStatusMap
+                        .putIfAbsent(status.overallStatus, () => [])
+                        .add(status);
                   }
                 }
 
                 // 合并并按严重程度排序
                 final allIssues = <Map<String, dynamic>>[];
 
-                // 添加二维码异常
-                markerIssues.forEach((type, markers) {
-                  final critical = markers
-                      .where(
-                        (m) =>
-                            m.healthStatus ==
-                            HealthStatus.HEALTH_STATUS_CRITICAL,
-                      )
-                      .length;
-                  final warning = markers
-                      .where(
-                        (m) =>
-                            m.healthStatus ==
-                            HealthStatus.HEALTH_STATUS_WARNING,
-                      )
-                      .length;
+                // 添加二维码异常统计
+                markerStatusMap.forEach((status, locations) {
+                  final statusName = _getHealthStatusName(status);
+                  final severity = status == HealthStatus.HEALTH_STATUS_CRITICAL
+                      ? 3
+                      : (status == HealthStatus.HEALTH_STATUS_ERROR ? 2 : 1);
                   allIssues.add({
-                    'type': type,
+                    'type': statusName,
                     'category': '二维码异常',
-                    'count': markers.length,
-                    'critical': critical,
-                    'warning': warning,
-                    'items': markers,
-                    'severity': critical * 3 + warning, // 用于排序
+                    'count': locations.length,
+                    'severity': severity * locations.length,
+                    'locations': locations,
                   });
                 });
 
-                // 添加地面异常
-                groundIssues.forEach((type, grounds) {
-                  final critical = grounds
-                      .where(
-                        (g) =>
-                            g.healthStatus ==
-                            HealthStatus.HEALTH_STATUS_CRITICAL,
-                      )
-                      .length;
-                  final warning = grounds
-                      .where(
-                        (g) =>
-                            g.healthStatus ==
-                            HealthStatus.HEALTH_STATUS_WARNING,
-                      )
-                      .length;
+                // 添加地面异常统计
+                groundStatusMap.forEach((status, locations) {
+                  final statusName = _getHealthStatusName(status);
+                  final severity = status == HealthStatus.HEALTH_STATUS_CRITICAL
+                      ? 3
+                      : (status == HealthStatus.HEALTH_STATUS_ERROR ? 2 : 1);
                   allIssues.add({
-                    'type': type,
+                    'type': statusName,
                     'category': '地面异常',
-                    'count': grounds.length,
-                    'critical': critical,
-                    'warning': warning,
-                    'items': grounds,
-                    'severity': critical * 3 + warning,
+                    'count': locations.length,
+                    'severity': severity * locations.length,
+                    'locations': locations,
                   });
                 });
 
-                // 按严重程度排序（critical越多越靠前）
+                // 按严重程度排序
                 allIssues.sort(
                   (a, b) =>
                       (b['severity'] as int).compareTo(a['severity'] as int),
@@ -689,7 +671,7 @@ class _OverviewPageState extends State<OverviewPage> {
 
                 return Column(
                   children: allIssues
-                      .map((item) => _buildDistributionItem(item))
+                      .map((item) => _buildStatusDistributionItem(item))
                       .toList(),
                 );
               },
@@ -781,6 +763,150 @@ class _OverviewPageState extends State<OverviewPage> {
             padding: const EdgeInsets.all(16),
             child: _buildIssueDetailsList(item),
           ),
+        ],
+      ),
+    );
+  }
+
+  // 用于显示综合状态的简化版本（支持展开详情）
+  Widget _buildStatusDistributionItem(Map<String, dynamic> item) {
+    final count = item['count'] as int;
+    final type = item['type'] as String;
+    final category = item['category'] as String;
+    final locations = item['locations'] as List<pb.OverallStatusInfo>;
+
+    // 根据严重程度确定颜色
+    final color = type.contains('严重')
+        ? Colors.red
+        : (type.contains('错误')
+              ? Colors.orange
+              : (type.contains('警告') ? Colors.amber : Colors.blue));
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ExpansionTile(
+        leading: Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                type,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                category,
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+              ),
+            ),
+          ],
+        ),
+        trailing: Text(
+          '$count 个位置',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: locations
+                  .map((loc) => _buildOverallStatusDetail(loc, category))
+                  .toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 显示单个位置的综合状态详情
+  Widget _buildOverallStatusDetail(
+    pb.OverallStatusInfo status,
+    String category,
+  ) {
+    final statusColor = _getStatusColor(status.overallStatus);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: statusColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '位置: (${status.logicLocation.localX.toDouble().toStringAsFixed(1)}, ${status.logicLocation.localY.toDouble().toStringAsFixed(1)})',
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  _getHealthStatusName(status.overallStatus),
+                  style: const TextStyle(color: Colors.white, fontSize: 11),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          if (category == '二维码异常') ...[
+            if (status.hasExpectedCode())
+              Text(
+                '期望二维码: ${status.expectedCode}',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+              ),
+            if (status.hasDeviationData()) ...[
+              Text(
+                '平均偏差: X=${status.deviationData.diffX.toDouble().toStringAsFixed(2)}mm, Y=${status.deviationData.diffY.toDouble().toStringAsFixed(2)}mm',
+                style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+              ),
+              if (status.deviationData.rotate != 0)
+                Text(
+                  '角度偏差: ${status.deviationData.rotate.toStringAsFixed(2)}°',
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                ),
+            ],
+          ],
+          if (category == '地面异常' && status.hasAverageDeviation())
+            Text(
+              '平均偏差: ${status.averageDeviation.toStringAsFixed(2)}mm',
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+            ),
+          Text(
+            '检测次数: ${status.totalDetections} 次 | 参与车辆: ${status.participatingCars} 台',
+            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+          ),
+          if (status.hasLastUpdated())
+            Text(
+              '最后更新: ${_formatTimestamp(status.lastUpdated)}',
+              style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+            ),
         ],
       ),
     );
@@ -953,6 +1079,14 @@ class _OverviewPageState extends State<OverviewPage> {
       default:
         return Colors.grey;
     }
+  }
+
+  String _formatTimestamp($3.Timestamp timestamp) {
+    final dt = DateTime.fromMillisecondsSinceEpoch(
+      timestamp.seconds.toInt() * 1000 + timestamp.nanos ~/ 1000000,
+    );
+    return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')} '
+        '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}:${dt.second.toString().padLeft(2, '0')}';
   }
 
   Widget _buildRecentAlerts() {
@@ -1305,6 +1439,12 @@ class _QRCodeAnalysisPageState extends State<QRCodeAnalysisPage> {
                       itemBuilder: (context, index) {
                         return QRCodeExceptionCard(
                           marker: sortedMarkers[index],
+                          grpcService: widget.grpcService,
+                          onReset: () {
+                            setState(() {
+                              // 刷新列表
+                            });
+                          },
                         );
                       },
                     );
@@ -1318,8 +1458,15 @@ class _QRCodeAnalysisPageState extends State<QRCodeAnalysisPage> {
 
 class QRCodeExceptionCard extends StatefulWidget {
   final pb.MarkerHealthInfo marker;
+  final SiteHealthRealGrpcService grpcService;
+  final VoidCallback onReset;
 
-  const QRCodeExceptionCard({super.key, required this.marker});
+  const QRCodeExceptionCard({
+    super.key,
+    required this.marker,
+    required this.grpcService,
+    required this.onReset,
+  });
 
   @override
   State<QRCodeExceptionCard> createState() => _QRCodeExceptionCardState();
@@ -1327,6 +1474,7 @@ class QRCodeExceptionCard extends StatefulWidget {
 
 class _QRCodeExceptionCardState extends State<QRCodeExceptionCard> {
   bool _isExpanded = false; // 默认折叠
+  bool _isResetting = false; // 是否正在重置
 
   String _getIssueTypeName() {
     switch (widget.marker.issueType) {
@@ -1524,6 +1672,27 @@ class _QRCodeExceptionCardState extends State<QRCodeExceptionCard> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
+                      if (widget.marker.healthStatus !=
+                          pb.HealthStatus.HEALTH_STATUS_NORMAL)
+                        OutlinedButton.icon(
+                          onPressed: _isResetting
+                              ? null
+                              : () => _resetToNormal(),
+                          icon: _isResetting
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.refresh),
+                          label: const Text('重置状态'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.green,
+                          ),
+                        ),
+                      const SizedBox(width: 8),
                       TextButton.icon(
                         onPressed: () {},
                         icon: const Icon(Icons.construction),
@@ -1630,6 +1799,76 @@ class _QRCodeExceptionCardState extends State<QRCodeExceptionCard> {
         ],
       ),
     );
+  }
+
+  Future<void> _resetToNormal() async {
+    // 显示确认对话框
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('确认重置'),
+        content: Text(
+          '确定要将位置 (${widget.marker.nodeLogicLocation.localX}, ${widget.marker.nodeLogicLocation.localY}) 的健康状态重置为正常吗？\n\n'
+          '这将清除该位置的所有异常记录。',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('取消'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('确认重置'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+
+    setState(() {
+      _isResetting = true;
+    });
+
+    try {
+      // 调用 gRPC 服务重置健康数据
+      await widget.grpcService.resetLocationHealthData(
+        logicLocation: widget.marker.nodeLogicLocation,
+      );
+
+      if (!mounted) return;
+
+      // 显示成功消息
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '✓ 位置 (${widget.marker.nodeLogicLocation.localX}, ${widget.marker.nodeLogicLocation.localY}) 已重置为正常状态',
+          ),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+
+      // 通知父组件刷新
+      widget.onReset();
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('重置失败: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isResetting = false;
+        });
+      }
+    }
   }
 }
 

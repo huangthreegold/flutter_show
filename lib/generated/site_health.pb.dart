@@ -1079,6 +1079,653 @@ class HealthInfoQueryResponse extends $pb.GeneratedMessage {
   $pb.PbList<GoodsSlotHealthInfo> get goodsSlotHealths => $_getList(2);
 }
 
+/// 二维码历史检测记录（单个位置的完整历史）
+class MarkerDetectionHistoryRecord extends $pb.GeneratedMessage {
+  factory MarkerDetectionHistoryRecord({
+    $fixnum.Int64? nodeId,
+    $2.PositionData_t? logicLocation,
+    $core.String? expectedCode,
+    HealthStatus? overallStatus,
+    $3.Timestamp? lastUpdated,
+    $core.Iterable<CarDetectionHistory>? carHistories,
+  }) {
+    final result = create();
+    if (nodeId != null) result.nodeId = nodeId;
+    if (logicLocation != null) result.logicLocation = logicLocation;
+    if (expectedCode != null) result.expectedCode = expectedCode;
+    if (overallStatus != null) result.overallStatus = overallStatus;
+    if (lastUpdated != null) result.lastUpdated = lastUpdated;
+    if (carHistories != null) result.carHistories.addAll(carHistories);
+    return result;
+  }
+
+  MarkerDetectionHistoryRecord._();
+
+  factory MarkerDetectionHistoryRecord.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory MarkerDetectionHistoryRecord.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'MarkerDetectionHistoryRecord',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'galaxis.site.health'),
+      createEmptyInstance: create)
+    ..aInt64(1, _omitFieldNames ? '' : 'nodeId')
+    ..aOM<$2.PositionData_t>(2, _omitFieldNames ? '' : 'logicLocation',
+        subBuilder: $2.PositionData_t.create)
+    ..aOS(3, _omitFieldNames ? '' : 'expectedCode')
+    ..aE<HealthStatus>(4, _omitFieldNames ? '' : 'overallStatus',
+        enumValues: HealthStatus.values)
+    ..aOM<$3.Timestamp>(5, _omitFieldNames ? '' : 'lastUpdated',
+        subBuilder: $3.Timestamp.create)
+    ..pPM<CarDetectionHistory>(6, _omitFieldNames ? '' : 'carHistories',
+        subBuilder: CarDetectionHistory.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MarkerDetectionHistoryRecord clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MarkerDetectionHistoryRecord copyWith(
+          void Function(MarkerDetectionHistoryRecord) updates) =>
+      super.copyWith(
+              (message) => updates(message as MarkerDetectionHistoryRecord))
+          as MarkerDetectionHistoryRecord;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MarkerDetectionHistoryRecord create() =>
+      MarkerDetectionHistoryRecord._();
+  @$core.override
+  MarkerDetectionHistoryRecord createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static MarkerDetectionHistoryRecord getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<MarkerDetectionHistoryRecord>(create);
+  static MarkerDetectionHistoryRecord? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get nodeId => $_getI64(0);
+  @$pb.TagNumber(1)
+  set nodeId($fixnum.Int64 value) => $_setInt64(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasNodeId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearNodeId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $2.PositionData_t get logicLocation => $_getN(1);
+  @$pb.TagNumber(2)
+  set logicLocation($2.PositionData_t value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasLogicLocation() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLogicLocation() => $_clearField(2);
+  @$pb.TagNumber(2)
+  $2.PositionData_t ensureLogicLocation() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $core.String get expectedCode => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set expectedCode($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasExpectedCode() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearExpectedCode() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  HealthStatus get overallStatus => $_getN(3);
+  @$pb.TagNumber(4)
+  set overallStatus(HealthStatus value) => $_setField(4, value);
+  @$pb.TagNumber(4)
+  $core.bool hasOverallStatus() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearOverallStatus() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $3.Timestamp get lastUpdated => $_getN(4);
+  @$pb.TagNumber(5)
+  set lastUpdated($3.Timestamp value) => $_setField(5, value);
+  @$pb.TagNumber(5)
+  $core.bool hasLastUpdated() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearLastUpdated() => $_clearField(5);
+  @$pb.TagNumber(5)
+  $3.Timestamp ensureLastUpdated() => $_ensure(4);
+
+  @$pb.TagNumber(6)
+  $pb.PbList<CarDetectionHistory> get carHistories => $_getList(5);
+}
+
+/// 单台车的检测历史
+class CarDetectionHistory extends $pb.GeneratedMessage {
+  factory CarDetectionHistory({
+    $fixnum.Int64? carId,
+    $core.Iterable<MarkerHealthInfo>? detections,
+  }) {
+    final result = create();
+    if (carId != null) result.carId = carId;
+    if (detections != null) result.detections.addAll(detections);
+    return result;
+  }
+
+  CarDetectionHistory._();
+
+  factory CarDetectionHistory.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory CarDetectionHistory.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'CarDetectionHistory',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'galaxis.site.health'),
+      createEmptyInstance: create)
+    ..aInt64(1, _omitFieldNames ? '' : 'carId')
+    ..pPM<MarkerHealthInfo>(2, _omitFieldNames ? '' : 'detections',
+        subBuilder: MarkerHealthInfo.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CarDetectionHistory clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  CarDetectionHistory copyWith(void Function(CarDetectionHistory) updates) =>
+      super.copyWith((message) => updates(message as CarDetectionHistory))
+          as CarDetectionHistory;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static CarDetectionHistory create() => CarDetectionHistory._();
+  @$core.override
+  CarDetectionHistory createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static CarDetectionHistory getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<CarDetectionHistory>(create);
+  static CarDetectionHistory? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get carId => $_getI64(0);
+  @$pb.TagNumber(1)
+  set carId($fixnum.Int64 value) => $_setInt64(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasCarId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCarId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $pb.PbList<MarkerHealthInfo> get detections => $_getList(1);
+}
+
+/// 二维码历史检测查询请求
+class MarkerDetectionHistoryRequest extends $pb.GeneratedMessage {
+  factory MarkerDetectionHistoryRequest({
+    $2.PositionData_t? logicLocation,
+    $fixnum.Int64? carId,
+    $core.int? limit,
+    $3.Timestamp? startTime,
+    $3.Timestamp? endTime,
+  }) {
+    final result = create();
+    if (logicLocation != null) result.logicLocation = logicLocation;
+    if (carId != null) result.carId = carId;
+    if (limit != null) result.limit = limit;
+    if (startTime != null) result.startTime = startTime;
+    if (endTime != null) result.endTime = endTime;
+    return result;
+  }
+
+  MarkerDetectionHistoryRequest._();
+
+  factory MarkerDetectionHistoryRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory MarkerDetectionHistoryRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'MarkerDetectionHistoryRequest',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'galaxis.site.health'),
+      createEmptyInstance: create)
+    ..aOM<$2.PositionData_t>(1, _omitFieldNames ? '' : 'logicLocation',
+        subBuilder: $2.PositionData_t.create)
+    ..aInt64(2, _omitFieldNames ? '' : 'carId')
+    ..aI(3, _omitFieldNames ? '' : 'limit')
+    ..aOM<$3.Timestamp>(4, _omitFieldNames ? '' : 'startTime',
+        subBuilder: $3.Timestamp.create)
+    ..aOM<$3.Timestamp>(5, _omitFieldNames ? '' : 'endTime',
+        subBuilder: $3.Timestamp.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MarkerDetectionHistoryRequest clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MarkerDetectionHistoryRequest copyWith(
+          void Function(MarkerDetectionHistoryRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as MarkerDetectionHistoryRequest))
+          as MarkerDetectionHistoryRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MarkerDetectionHistoryRequest create() =>
+      MarkerDetectionHistoryRequest._();
+  @$core.override
+  MarkerDetectionHistoryRequest createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static MarkerDetectionHistoryRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<MarkerDetectionHistoryRequest>(create);
+  static MarkerDetectionHistoryRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $2.PositionData_t get logicLocation => $_getN(0);
+  @$pb.TagNumber(1)
+  set logicLocation($2.PositionData_t value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasLogicLocation() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLogicLocation() => $_clearField(1);
+  @$pb.TagNumber(1)
+  $2.PositionData_t ensureLogicLocation() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get carId => $_getI64(1);
+  @$pb.TagNumber(2)
+  set carId($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasCarId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearCarId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  $core.int get limit => $_getIZ(2);
+  @$pb.TagNumber(3)
+  set limit($core.int value) => $_setSignedInt32(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasLimit() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearLimit() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $3.Timestamp get startTime => $_getN(3);
+  @$pb.TagNumber(4)
+  set startTime($3.Timestamp value) => $_setField(4, value);
+  @$pb.TagNumber(4)
+  $core.bool hasStartTime() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearStartTime() => $_clearField(4);
+  @$pb.TagNumber(4)
+  $3.Timestamp ensureStartTime() => $_ensure(3);
+
+  @$pb.TagNumber(5)
+  $3.Timestamp get endTime => $_getN(4);
+  @$pb.TagNumber(5)
+  set endTime($3.Timestamp value) => $_setField(5, value);
+  @$pb.TagNumber(5)
+  $core.bool hasEndTime() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearEndTime() => $_clearField(5);
+  @$pb.TagNumber(5)
+  $3.Timestamp ensureEndTime() => $_ensure(4);
+}
+
+/// 二维码历史检测查询响应
+class MarkerDetectionHistoryResponse extends $pb.GeneratedMessage {
+  factory MarkerDetectionHistoryResponse({
+    $core.Iterable<MarkerDetectionHistoryRecord>? records,
+  }) {
+    final result = create();
+    if (records != null) result.records.addAll(records);
+    return result;
+  }
+
+  MarkerDetectionHistoryResponse._();
+
+  factory MarkerDetectionHistoryResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory MarkerDetectionHistoryResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'MarkerDetectionHistoryResponse',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'galaxis.site.health'),
+      createEmptyInstance: create)
+    ..pPM<MarkerDetectionHistoryRecord>(1, _omitFieldNames ? '' : 'records',
+        subBuilder: MarkerDetectionHistoryRecord.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MarkerDetectionHistoryResponse clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  MarkerDetectionHistoryResponse copyWith(
+          void Function(MarkerDetectionHistoryResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as MarkerDetectionHistoryResponse))
+          as MarkerDetectionHistoryResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static MarkerDetectionHistoryResponse create() =>
+      MarkerDetectionHistoryResponse._();
+  @$core.override
+  MarkerDetectionHistoryResponse createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static MarkerDetectionHistoryResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<MarkerDetectionHistoryResponse>(create);
+  static MarkerDetectionHistoryResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<MarkerDetectionHistoryRecord> get records => $_getList(0);
+}
+
+/// 综合状态信息（不含具体检测数据，只有状态汇总）
+class OverallStatusInfo extends $pb.GeneratedMessage {
+  factory OverallStatusInfo({
+    $2.PositionData_t? logicLocation,
+    $fixnum.Int64? nodeId,
+    HealthStatus? overallStatus,
+    $3.Timestamp? lastUpdated,
+    $core.int? totalDetections,
+    $core.int? participatingCars,
+    $core.String? expectedCode,
+    $core.double? averageDeviation,
+    $2.NodeDeviationData? deviationData,
+  }) {
+    final result = create();
+    if (logicLocation != null) result.logicLocation = logicLocation;
+    if (nodeId != null) result.nodeId = nodeId;
+    if (overallStatus != null) result.overallStatus = overallStatus;
+    if (lastUpdated != null) result.lastUpdated = lastUpdated;
+    if (totalDetections != null) result.totalDetections = totalDetections;
+    if (participatingCars != null) result.participatingCars = participatingCars;
+    if (expectedCode != null) result.expectedCode = expectedCode;
+    if (averageDeviation != null) result.averageDeviation = averageDeviation;
+    if (deviationData != null) result.deviationData = deviationData;
+    return result;
+  }
+
+  OverallStatusInfo._();
+
+  factory OverallStatusInfo.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory OverallStatusInfo.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'OverallStatusInfo',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'galaxis.site.health'),
+      createEmptyInstance: create)
+    ..aOM<$2.PositionData_t>(1, _omitFieldNames ? '' : 'logicLocation',
+        subBuilder: $2.PositionData_t.create)
+    ..aInt64(2, _omitFieldNames ? '' : 'nodeId')
+    ..aE<HealthStatus>(3, _omitFieldNames ? '' : 'overallStatus',
+        enumValues: HealthStatus.values)
+    ..aOM<$3.Timestamp>(4, _omitFieldNames ? '' : 'lastUpdated',
+        subBuilder: $3.Timestamp.create)
+    ..aI(5, _omitFieldNames ? '' : 'totalDetections')
+    ..aI(6, _omitFieldNames ? '' : 'participatingCars')
+    ..aOS(7, _omitFieldNames ? '' : 'expectedCode')
+    ..aD(8, _omitFieldNames ? '' : 'averageDeviation')
+    ..aOM<$2.NodeDeviationData>(9, _omitFieldNames ? '' : 'deviationData',
+        subBuilder: $2.NodeDeviationData.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  OverallStatusInfo clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  OverallStatusInfo copyWith(void Function(OverallStatusInfo) updates) =>
+      super.copyWith((message) => updates(message as OverallStatusInfo))
+          as OverallStatusInfo;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static OverallStatusInfo create() => OverallStatusInfo._();
+  @$core.override
+  OverallStatusInfo createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static OverallStatusInfo getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<OverallStatusInfo>(create);
+  static OverallStatusInfo? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $2.PositionData_t get logicLocation => $_getN(0);
+  @$pb.TagNumber(1)
+  set logicLocation($2.PositionData_t value) => $_setField(1, value);
+  @$pb.TagNumber(1)
+  $core.bool hasLogicLocation() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearLogicLocation() => $_clearField(1);
+  @$pb.TagNumber(1)
+  $2.PositionData_t ensureLogicLocation() => $_ensure(0);
+
+  @$pb.TagNumber(2)
+  $fixnum.Int64 get nodeId => $_getI64(1);
+  @$pb.TagNumber(2)
+  set nodeId($fixnum.Int64 value) => $_setInt64(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasNodeId() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearNodeId() => $_clearField(2);
+
+  @$pb.TagNumber(3)
+  HealthStatus get overallStatus => $_getN(2);
+  @$pb.TagNumber(3)
+  set overallStatus(HealthStatus value) => $_setField(3, value);
+  @$pb.TagNumber(3)
+  $core.bool hasOverallStatus() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearOverallStatus() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $3.Timestamp get lastUpdated => $_getN(3);
+  @$pb.TagNumber(4)
+  set lastUpdated($3.Timestamp value) => $_setField(4, value);
+  @$pb.TagNumber(4)
+  $core.bool hasLastUpdated() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearLastUpdated() => $_clearField(4);
+  @$pb.TagNumber(4)
+  $3.Timestamp ensureLastUpdated() => $_ensure(3);
+
+  @$pb.TagNumber(5)
+  $core.int get totalDetections => $_getIZ(4);
+  @$pb.TagNumber(5)
+  set totalDetections($core.int value) => $_setSignedInt32(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasTotalDetections() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearTotalDetections() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $core.int get participatingCars => $_getIZ(5);
+  @$pb.TagNumber(6)
+  set participatingCars($core.int value) => $_setSignedInt32(5, value);
+  @$pb.TagNumber(6)
+  $core.bool hasParticipatingCars() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearParticipatingCars() => $_clearField(6);
+
+  @$pb.TagNumber(7)
+  $core.String get expectedCode => $_getSZ(6);
+  @$pb.TagNumber(7)
+  set expectedCode($core.String value) => $_setString(6, value);
+  @$pb.TagNumber(7)
+  $core.bool hasExpectedCode() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearExpectedCode() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  $core.double get averageDeviation => $_getN(7);
+  @$pb.TagNumber(8)
+  set averageDeviation($core.double value) => $_setDouble(7, value);
+  @$pb.TagNumber(8)
+  $core.bool hasAverageDeviation() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearAverageDeviation() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $2.NodeDeviationData get deviationData => $_getN(8);
+  @$pb.TagNumber(9)
+  set deviationData($2.NodeDeviationData value) => $_setField(9, value);
+  @$pb.TagNumber(9)
+  $core.bool hasDeviationData() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearDeviationData() => $_clearField(9);
+  @$pb.TagNumber(9)
+  $2.NodeDeviationData ensureDeviationData() => $_ensure(8);
+}
+
+/// 综合状态查询响应
+class OverallStatusQueryResponse extends $pb.GeneratedMessage {
+  factory OverallStatusQueryResponse({
+    $core.Iterable<OverallStatusInfo>? markerStatuses,
+    $core.Iterable<OverallStatusInfo>? groundStatuses,
+  }) {
+    final result = create();
+    if (markerStatuses != null) result.markerStatuses.addAll(markerStatuses);
+    if (groundStatuses != null) result.groundStatuses.addAll(groundStatuses);
+    return result;
+  }
+
+  OverallStatusQueryResponse._();
+
+  factory OverallStatusQueryResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory OverallStatusQueryResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'OverallStatusQueryResponse',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'galaxis.site.health'),
+      createEmptyInstance: create)
+    ..pPM<OverallStatusInfo>(1, _omitFieldNames ? '' : 'markerStatuses',
+        subBuilder: OverallStatusInfo.create)
+    ..pPM<OverallStatusInfo>(2, _omitFieldNames ? '' : 'groundStatuses',
+        subBuilder: OverallStatusInfo.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  OverallStatusQueryResponse clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  OverallStatusQueryResponse copyWith(
+          void Function(OverallStatusQueryResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as OverallStatusQueryResponse))
+          as OverallStatusQueryResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static OverallStatusQueryResponse create() => OverallStatusQueryResponse._();
+  @$core.override
+  OverallStatusQueryResponse createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static OverallStatusQueryResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<OverallStatusQueryResponse>(create);
+  static OverallStatusQueryResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<OverallStatusInfo> get markerStatuses => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $pb.PbList<OverallStatusInfo> get groundStatuses => $_getList(1);
+}
+
+/// 最新检测数据查询响应（纯最新数据，不含综合状态计算）
+class LatestDetectionQueryResponse extends $pb.GeneratedMessage {
+  factory LatestDetectionQueryResponse({
+    $core.Iterable<MarkerHealthInfo>? markerDetections,
+    $core.Iterable<GroundHealthInfo>? groundDetections,
+    $core.Iterable<GoodsSlotHealthInfo>? goodsSlotDetections,
+  }) {
+    final result = create();
+    if (markerDetections != null)
+      result.markerDetections.addAll(markerDetections);
+    if (groundDetections != null)
+      result.groundDetections.addAll(groundDetections);
+    if (goodsSlotDetections != null)
+      result.goodsSlotDetections.addAll(goodsSlotDetections);
+    return result;
+  }
+
+  LatestDetectionQueryResponse._();
+
+  factory LatestDetectionQueryResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory LatestDetectionQueryResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'LatestDetectionQueryResponse',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'galaxis.site.health'),
+      createEmptyInstance: create)
+    ..pPM<MarkerHealthInfo>(1, _omitFieldNames ? '' : 'markerDetections',
+        subBuilder: MarkerHealthInfo.create)
+    ..pPM<GroundHealthInfo>(2, _omitFieldNames ? '' : 'groundDetections',
+        subBuilder: GroundHealthInfo.create)
+    ..pPM<GoodsSlotHealthInfo>(3, _omitFieldNames ? '' : 'goodsSlotDetections',
+        subBuilder: GoodsSlotHealthInfo.create)
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LatestDetectionQueryResponse clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  LatestDetectionQueryResponse copyWith(
+          void Function(LatestDetectionQueryResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as LatestDetectionQueryResponse))
+          as LatestDetectionQueryResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static LatestDetectionQueryResponse create() =>
+      LatestDetectionQueryResponse._();
+  @$core.override
+  LatestDetectionQueryResponse createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static LatestDetectionQueryResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<LatestDetectionQueryResponse>(create);
+  static LatestDetectionQueryResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $pb.PbList<MarkerHealthInfo> get markerDetections => $_getList(0);
+
+  @$pb.TagNumber(2)
+  $pb.PbList<GroundHealthInfo> get groundDetections => $_getList(1);
+
+  @$pb.TagNumber(3)
+  $pb.PbList<GoodsSlotHealthInfo> get goodsSlotDetections => $_getList(2);
+}
+
 /// 健康统计信息
 class HealthStatistics extends $pb.GeneratedMessage {
   factory HealthStatistics({
@@ -2437,6 +3084,238 @@ class CarLocationStatsResponse extends $pb.GeneratedMessage {
   $core.bool hasCriticalRate() => $_has(10);
   @$pb.TagNumber(11)
   void clearCriticalRate() => $_clearField(11);
+}
+
+/// 手动添加二维码异常信息请求
+class AddMarkerExceptionRequest extends $pb.GeneratedMessage {
+  factory AddMarkerExceptionRequest({
+    $fixnum.Int64? carId,
+    $2.PositionData_t? logicLocation,
+    $core.String? exceptionType,
+    $core.String? detectedMarkerCode,
+    $core.double? decodeSuccessRate,
+    $2.NodeDeviationData? deviation,
+    MarkerIssueType? issueType,
+    HealthStatus? healthStatus,
+    $core.String? description,
+  }) {
+    final result = create();
+    if (carId != null) result.carId = carId;
+    if (logicLocation != null) result.logicLocation = logicLocation;
+    if (exceptionType != null) result.exceptionType = exceptionType;
+    if (detectedMarkerCode != null)
+      result.detectedMarkerCode = detectedMarkerCode;
+    if (decodeSuccessRate != null) result.decodeSuccessRate = decodeSuccessRate;
+    if (deviation != null) result.deviation = deviation;
+    if (issueType != null) result.issueType = issueType;
+    if (healthStatus != null) result.healthStatus = healthStatus;
+    if (description != null) result.description = description;
+    return result;
+  }
+
+  AddMarkerExceptionRequest._();
+
+  factory AddMarkerExceptionRequest.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AddMarkerExceptionRequest.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AddMarkerExceptionRequest',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'galaxis.site.health'),
+      createEmptyInstance: create)
+    ..aInt64(1, _omitFieldNames ? '' : 'carId')
+    ..aOM<$2.PositionData_t>(2, _omitFieldNames ? '' : 'logicLocation',
+        subBuilder: $2.PositionData_t.create)
+    ..aOS(3, _omitFieldNames ? '' : 'exceptionType')
+    ..aOS(4, _omitFieldNames ? '' : 'detectedMarkerCode')
+    ..aD(5, _omitFieldNames ? '' : 'decodeSuccessRate')
+    ..aOM<$2.NodeDeviationData>(6, _omitFieldNames ? '' : 'deviation',
+        subBuilder: $2.NodeDeviationData.create)
+    ..aE<MarkerIssueType>(7, _omitFieldNames ? '' : 'issueType',
+        enumValues: MarkerIssueType.values)
+    ..aE<HealthStatus>(8, _omitFieldNames ? '' : 'healthStatus',
+        enumValues: HealthStatus.values)
+    ..aOS(9, _omitFieldNames ? '' : 'description')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AddMarkerExceptionRequest clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AddMarkerExceptionRequest copyWith(
+          void Function(AddMarkerExceptionRequest) updates) =>
+      super.copyWith((message) => updates(message as AddMarkerExceptionRequest))
+          as AddMarkerExceptionRequest;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AddMarkerExceptionRequest create() => AddMarkerExceptionRequest._();
+  @$core.override
+  AddMarkerExceptionRequest createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static AddMarkerExceptionRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AddMarkerExceptionRequest>(create);
+  static AddMarkerExceptionRequest? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $fixnum.Int64 get carId => $_getI64(0);
+  @$pb.TagNumber(1)
+  set carId($fixnum.Int64 value) => $_setInt64(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasCarId() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearCarId() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $2.PositionData_t get logicLocation => $_getN(1);
+  @$pb.TagNumber(2)
+  set logicLocation($2.PositionData_t value) => $_setField(2, value);
+  @$pb.TagNumber(2)
+  $core.bool hasLogicLocation() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearLogicLocation() => $_clearField(2);
+  @$pb.TagNumber(2)
+  $2.PositionData_t ensureLogicLocation() => $_ensure(1);
+
+  @$pb.TagNumber(3)
+  $core.String get exceptionType => $_getSZ(2);
+  @$pb.TagNumber(3)
+  set exceptionType($core.String value) => $_setString(2, value);
+  @$pb.TagNumber(3)
+  $core.bool hasExceptionType() => $_has(2);
+  @$pb.TagNumber(3)
+  void clearExceptionType() => $_clearField(3);
+
+  @$pb.TagNumber(4)
+  $core.String get detectedMarkerCode => $_getSZ(3);
+  @$pb.TagNumber(4)
+  set detectedMarkerCode($core.String value) => $_setString(3, value);
+  @$pb.TagNumber(4)
+  $core.bool hasDetectedMarkerCode() => $_has(3);
+  @$pb.TagNumber(4)
+  void clearDetectedMarkerCode() => $_clearField(4);
+
+  @$pb.TagNumber(5)
+  $core.double get decodeSuccessRate => $_getN(4);
+  @$pb.TagNumber(5)
+  set decodeSuccessRate($core.double value) => $_setDouble(4, value);
+  @$pb.TagNumber(5)
+  $core.bool hasDecodeSuccessRate() => $_has(4);
+  @$pb.TagNumber(5)
+  void clearDecodeSuccessRate() => $_clearField(5);
+
+  @$pb.TagNumber(6)
+  $2.NodeDeviationData get deviation => $_getN(5);
+  @$pb.TagNumber(6)
+  set deviation($2.NodeDeviationData value) => $_setField(6, value);
+  @$pb.TagNumber(6)
+  $core.bool hasDeviation() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearDeviation() => $_clearField(6);
+  @$pb.TagNumber(6)
+  $2.NodeDeviationData ensureDeviation() => $_ensure(5);
+
+  @$pb.TagNumber(7)
+  MarkerIssueType get issueType => $_getN(6);
+  @$pb.TagNumber(7)
+  set issueType(MarkerIssueType value) => $_setField(7, value);
+  @$pb.TagNumber(7)
+  $core.bool hasIssueType() => $_has(6);
+  @$pb.TagNumber(7)
+  void clearIssueType() => $_clearField(7);
+
+  @$pb.TagNumber(8)
+  HealthStatus get healthStatus => $_getN(7);
+  @$pb.TagNumber(8)
+  set healthStatus(HealthStatus value) => $_setField(8, value);
+  @$pb.TagNumber(8)
+  $core.bool hasHealthStatus() => $_has(7);
+  @$pb.TagNumber(8)
+  void clearHealthStatus() => $_clearField(8);
+
+  @$pb.TagNumber(9)
+  $core.String get description => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set description($core.String value) => $_setString(8, value);
+  @$pb.TagNumber(9)
+  $core.bool hasDescription() => $_has(8);
+  @$pb.TagNumber(9)
+  void clearDescription() => $_clearField(9);
+}
+
+/// 手动添加二维码异常信息响应
+class AddMarkerExceptionResponse extends $pb.GeneratedMessage {
+  factory AddMarkerExceptionResponse({
+    $core.bool? success,
+    $core.String? message,
+  }) {
+    final result = create();
+    if (success != null) result.success = success;
+    if (message != null) result.message = message;
+    return result;
+  }
+
+  AddMarkerExceptionResponse._();
+
+  factory AddMarkerExceptionResponse.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory AddMarkerExceptionResponse.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
+
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AddMarkerExceptionResponse',
+      package:
+          const $pb.PackageName(_omitMessageNames ? '' : 'galaxis.site.health'),
+      createEmptyInstance: create)
+    ..aOB(1, _omitFieldNames ? '' : 'success')
+    ..aOS(2, _omitFieldNames ? '' : 'message')
+    ..hasRequiredFields = false;
+
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AddMarkerExceptionResponse clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  AddMarkerExceptionResponse copyWith(
+          void Function(AddMarkerExceptionResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as AddMarkerExceptionResponse))
+          as AddMarkerExceptionResponse;
+
+  @$core.override
+  $pb.BuilderInfo get info_ => _i;
+
+  @$core.pragma('dart2js:noInline')
+  static AddMarkerExceptionResponse create() => AddMarkerExceptionResponse._();
+  @$core.override
+  AddMarkerExceptionResponse createEmptyInstance() => create();
+  @$core.pragma('dart2js:noInline')
+  static AddMarkerExceptionResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AddMarkerExceptionResponse>(create);
+  static AddMarkerExceptionResponse? _defaultInstance;
+
+  @$pb.TagNumber(1)
+  $core.bool get success => $_getBF(0);
+  @$pb.TagNumber(1)
+  set success($core.bool value) => $_setBool(0, value);
+  @$pb.TagNumber(1)
+  $core.bool hasSuccess() => $_has(0);
+  @$pb.TagNumber(1)
+  void clearSuccess() => $_clearField(1);
+
+  @$pb.TagNumber(2)
+  $core.String get message => $_getSZ(1);
+  @$pb.TagNumber(2)
+  set message($core.String value) => $_setString(1, value);
+  @$pb.TagNumber(2)
+  $core.bool hasMessage() => $_has(1);
+  @$pb.TagNumber(2)
+  void clearMessage() => $_clearField(2);
 }
 
 /// 单次角度采样数据

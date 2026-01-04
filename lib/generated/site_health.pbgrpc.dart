@@ -51,12 +51,38 @@ class SiteHealthServiceClient extends $grpc.Client {
         .single;
   }
 
-  /// 查询健康信息
+  /// 查询健康信息（包含最新检测+综合状态，原有接口保持兼容）
   $grpc.ResponseFuture<$0.HealthInfoQueryResponse> queryHealthInfo(
     $0.HealthInfoQueryRequest request, {
     $grpc.CallOptions? options,
   }) {
     return $createUnaryCall(_$queryHealthInfo, request, options: options);
+  }
+
+  /// 查询综合状态（只返回综合判定结果，不含具体检测数据）
+  $grpc.ResponseFuture<$0.OverallStatusQueryResponse> queryOverallStatus(
+    $0.HealthInfoQueryRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$queryOverallStatus, request, options: options);
+  }
+
+  /// 查询最新检测数据（只返回最新一次检测，health_status是单次检测状态）
+  $grpc.ResponseFuture<$0.LatestDetectionQueryResponse> queryLatestDetection(
+    $0.HealthInfoQueryRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$queryLatestDetection, request, options: options);
+  }
+
+  /// 查询二维码历史检测记录（包含所有车辆的完整历史）
+  $grpc.ResponseFuture<$0.MarkerDetectionHistoryResponse>
+      queryMarkerDetectionHistory(
+    $0.MarkerDetectionHistoryRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$queryMarkerDetectionHistory, request,
+        options: options);
   }
 
   /// 获取健康统计信息
@@ -118,6 +144,14 @@ class SiteHealthServiceClient extends $grpc.Client {
   }) {
     return $createUnaryCall(_$resetLocationHealthData, request,
         options: options);
+  }
+
+  /// 手动添加二维码异常信息（可被查询接口查出）
+  $grpc.ResponseFuture<$0.AddMarkerExceptionResponse> addMarkerException(
+    $0.AddMarkerExceptionRequest request, {
+    $grpc.CallOptions? options,
+  }) {
+    return $createUnaryCall(_$addMarkerException, request, options: options);
   }
 
   /// 上报角度学习数据（单车上报）
@@ -217,6 +251,21 @@ class SiteHealthServiceClient extends $grpc.Client {
           '/galaxis.site.health.SiteHealthService/QueryHealthInfo',
           ($0.HealthInfoQueryRequest value) => value.writeToBuffer(),
           $0.HealthInfoQueryResponse.fromBuffer);
+  static final _$queryOverallStatus = $grpc.ClientMethod<
+          $0.HealthInfoQueryRequest, $0.OverallStatusQueryResponse>(
+      '/galaxis.site.health.SiteHealthService/QueryOverallStatus',
+      ($0.HealthInfoQueryRequest value) => value.writeToBuffer(),
+      $0.OverallStatusQueryResponse.fromBuffer);
+  static final _$queryLatestDetection = $grpc.ClientMethod<
+          $0.HealthInfoQueryRequest, $0.LatestDetectionQueryResponse>(
+      '/galaxis.site.health.SiteHealthService/QueryLatestDetection',
+      ($0.HealthInfoQueryRequest value) => value.writeToBuffer(),
+      $0.LatestDetectionQueryResponse.fromBuffer);
+  static final _$queryMarkerDetectionHistory = $grpc.ClientMethod<
+          $0.MarkerDetectionHistoryRequest, $0.MarkerDetectionHistoryResponse>(
+      '/galaxis.site.health.SiteHealthService/QueryMarkerDetectionHistory',
+      ($0.MarkerDetectionHistoryRequest value) => value.writeToBuffer(),
+      $0.MarkerDetectionHistoryResponse.fromBuffer);
   static final _$getHealthStatistics =
       $grpc.ClientMethod<$1.Empty, $0.HealthStatistics>(
           '/galaxis.site.health.SiteHealthService/GetHealthStatistics',
@@ -253,6 +302,11 @@ class SiteHealthServiceClient extends $grpc.Client {
           '/galaxis.site.health.SiteHealthService/ResetLocationHealthData',
           ($0.HealthInfoQueryRequest value) => value.writeToBuffer(),
           $0.DataCleanupResponse.fromBuffer);
+  static final _$addMarkerException = $grpc.ClientMethod<
+          $0.AddMarkerExceptionRequest, $0.AddMarkerExceptionResponse>(
+      '/galaxis.site.health.SiteHealthService/AddMarkerException',
+      ($0.AddMarkerExceptionRequest value) => value.writeToBuffer(),
+      $0.AddMarkerExceptionResponse.fromBuffer);
   static final _$reportAngleLearning = $grpc.ClientMethod<
           $0.ReportAngleLearningRequest, $0.ReportAngleLearningResponse>(
       '/galaxis.site.health.SiteHealthService/ReportAngleLearning',
@@ -329,6 +383,33 @@ abstract class SiteHealthServiceBase extends $grpc.Service {
         ($core.List<$core.int> value) =>
             $0.HealthInfoQueryRequest.fromBuffer(value),
         ($0.HealthInfoQueryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.HealthInfoQueryRequest,
+            $0.OverallStatusQueryResponse>(
+        'QueryOverallStatus',
+        queryOverallStatus_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.HealthInfoQueryRequest.fromBuffer(value),
+        ($0.OverallStatusQueryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.HealthInfoQueryRequest,
+            $0.LatestDetectionQueryResponse>(
+        'QueryLatestDetection',
+        queryLatestDetection_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.HealthInfoQueryRequest.fromBuffer(value),
+        ($0.LatestDetectionQueryResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.MarkerDetectionHistoryRequest,
+            $0.MarkerDetectionHistoryResponse>(
+        'QueryMarkerDetectionHistory',
+        queryMarkerDetectionHistory_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.MarkerDetectionHistoryRequest.fromBuffer(value),
+        ($0.MarkerDetectionHistoryResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$1.Empty, $0.HealthStatistics>(
         'GetHealthStatistics',
         getHealthStatistics_Pre,
@@ -388,6 +469,15 @@ abstract class SiteHealthServiceBase extends $grpc.Service {
             ($core.List<$core.int> value) =>
                 $0.HealthInfoQueryRequest.fromBuffer(value),
             ($0.DataCleanupResponse value) => value.writeToBuffer()));
+    $addMethod($grpc.ServiceMethod<$0.AddMarkerExceptionRequest,
+            $0.AddMarkerExceptionResponse>(
+        'AddMarkerException',
+        addMarkerException_Pre,
+        false,
+        false,
+        ($core.List<$core.int> value) =>
+            $0.AddMarkerExceptionRequest.fromBuffer(value),
+        ($0.AddMarkerExceptionResponse value) => value.writeToBuffer()));
     $addMethod($grpc.ServiceMethod<$0.ReportAngleLearningRequest,
             $0.ReportAngleLearningResponse>(
         'ReportAngleLearning',
@@ -483,6 +573,33 @@ abstract class SiteHealthServiceBase extends $grpc.Service {
   $async.Future<$0.HealthInfoQueryResponse> queryHealthInfo(
       $grpc.ServiceCall call, $0.HealthInfoQueryRequest request);
 
+  $async.Future<$0.OverallStatusQueryResponse> queryOverallStatus_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.HealthInfoQueryRequest> $request) async {
+    return queryOverallStatus($call, await $request);
+  }
+
+  $async.Future<$0.OverallStatusQueryResponse> queryOverallStatus(
+      $grpc.ServiceCall call, $0.HealthInfoQueryRequest request);
+
+  $async.Future<$0.LatestDetectionQueryResponse> queryLatestDetection_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.HealthInfoQueryRequest> $request) async {
+    return queryLatestDetection($call, await $request);
+  }
+
+  $async.Future<$0.LatestDetectionQueryResponse> queryLatestDetection(
+      $grpc.ServiceCall call, $0.HealthInfoQueryRequest request);
+
+  $async.Future<$0.MarkerDetectionHistoryResponse>
+      queryMarkerDetectionHistory_Pre($grpc.ServiceCall $call,
+          $async.Future<$0.MarkerDetectionHistoryRequest> $request) async {
+    return queryMarkerDetectionHistory($call, await $request);
+  }
+
+  $async.Future<$0.MarkerDetectionHistoryResponse> queryMarkerDetectionHistory(
+      $grpc.ServiceCall call, $0.MarkerDetectionHistoryRequest request);
+
   $async.Future<$0.HealthStatistics> getHealthStatistics_Pre(
       $grpc.ServiceCall $call, $async.Future<$1.Empty> $request) async {
     return getHealthStatistics($call, await $request);
@@ -542,6 +659,15 @@ abstract class SiteHealthServiceBase extends $grpc.Service {
 
   $async.Future<$0.DataCleanupResponse> resetLocationHealthData(
       $grpc.ServiceCall call, $0.HealthInfoQueryRequest request);
+
+  $async.Future<$0.AddMarkerExceptionResponse> addMarkerException_Pre(
+      $grpc.ServiceCall $call,
+      $async.Future<$0.AddMarkerExceptionRequest> $request) async {
+    return addMarkerException($call, await $request);
+  }
+
+  $async.Future<$0.AddMarkerExceptionResponse> addMarkerException(
+      $grpc.ServiceCall call, $0.AddMarkerExceptionRequest request);
 
   $async.Future<$0.ReportAngleLearningResponse> reportAngleLearning_Pre(
       $grpc.ServiceCall $call,

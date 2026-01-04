@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'package:grpc/grpc.dart';
 import 'site_health_models.dart';
+import 'generated/types.pb.dart' as types;
 
 // 简化的gRPC服务类，用于获取实时数据
 class SiteHealthGrpcService {
   late ClientChannel _channel;
   bool _isConnected = false;
-  
+
   // 模拟的数据存储
   final List<MarkerHealthInfo> _markerHealthData = [];
   final List<GroundHealthInfo> _groundHealthData = [];
@@ -22,19 +23,19 @@ class SiteHealthGrpcService {
           credentials: ChannelCredentials.insecure(),
         ),
       );
-      
+
       // 使用超时验证连接
       final connection = Future.delayed(const Duration(seconds: 3), () {
         throw TimeoutException('连接超时');
       });
-      
-      await Future.any([
-        _channel.getConnection(),
-        connection,
-      ]).timeout(const Duration(seconds: 3), onTimeout: () {
-        throw Exception('无法连接到 gRPC 服务器');
-      });
-      
+
+      await Future.any([_channel.getConnection(), connection]).timeout(
+        const Duration(seconds: 3),
+        onTimeout: () {
+          throw Exception('无法连接到 gRPC 服务器');
+        },
+      );
+
       _isConnected = true;
       print('✓ gRPC连接成功: $host:$port');
     } catch (e) {
@@ -142,11 +143,32 @@ class SiteHealthGrpcService {
     return [
       VehicleStatusData('AGV-01', '运行中', '正常', 95 + (time % 5), 'S-12', '无异常'),
       VehicleStatusData('AGV-02', '运行中', '正常', 88 + (time % 8), 'P-08', '无异常'),
-      VehicleStatusData('AGV-03', time % 10 < 5 ? '异常' : '运行中', '地面不平', 65 + (time % 10), '维修中', 'kUnderpanExceptionalVibration'),
+      VehicleStatusData(
+        'AGV-03',
+        time % 10 < 5 ? '异常' : '运行中',
+        '地面不平',
+        65 + (time % 10),
+        '维修中',
+        'kUnderpanExceptionalVibration',
+      ),
       VehicleStatusData('AGV-04', '运行中', '正常', 92 + (time % 3), 'S-15', '无异常'),
-      VehicleStatusData('AGV-05', time % 8 < 3 ? '警告' : '运行中', '二维码异常', 75 + (time % 10), 'C-03', time % 8 < 3 ? 'kFalseResultMightBeDamagedOrDirty' : '无异常'),
+      VehicleStatusData(
+        'AGV-05',
+        time % 8 < 3 ? '警告' : '运行中',
+        '二维码异常',
+        75 + (time % 10),
+        'C-03',
+        time % 8 < 3 ? 'kFalseResultMightBeDamagedOrDirty' : '无异常',
+      ),
       VehicleStatusData('AGV-06', '运行中', '正常', 96 + (time % 4), 'S-08', '无异常'),
-      VehicleStatusData('AGV-07', '异常', '地面不平', 70 + (time % 5), '待检查', 'kUnderpanExceptionalVibration'),
+      VehicleStatusData(
+        'AGV-07',
+        '异常',
+        '地面不平',
+        70 + (time % 5),
+        '待检查',
+        'kUnderpanExceptionalVibration',
+      ),
       VehicleStatusData('AGV-08', '运行中', '正常', 90 + (time % 6), 'P-12', '无异常'),
     ];
   }
@@ -186,7 +208,8 @@ class SiteHealthGrpcService {
       print('上报健康数据:');
       if (markerHealth != null) print('  - 二维码信息: ${markerHealth.nodeId}');
       if (groundHealth != null) print('  - 地面信息: 位置 ${groundHealth.carId}');
-      if (goodsSlotHealth != null) print('  - 货架信息: ${goodsSlotHealth.goodsSlotId}');
+      if (goodsSlotHealth != null)
+        print('  - 货架信息: ${goodsSlotHealth.goodsSlotId}');
     } catch (e) {
       print('上报失败: $e');
     }
@@ -283,14 +306,14 @@ class SiteHealthGrpcService {
   Stream<Map<String, dynamic>> subscribeHealthStatus() async* {
     while (true) {
       await Future.delayed(const Duration(seconds: 3));
-      
+
       final healthInfo = {
         'timestamp': DateTime.now().toIso8601String(),
         'marker_issues': _generateRandomMarkerIssue(),
         'ground_issues': _generateRandomGroundIssue(),
         'goods_slot_issues': _generateRandomGoodsSlotIssue(),
       };
-      
+
       yield healthInfo;
     }
   }
@@ -429,7 +452,9 @@ class SiteHealthGrpcService {
       markers = markers.where((m) => m.nodeId == nodeId).toList();
     }
     if (goodsSlotId != null) {
-      goodsSlots = goodsSlots.where((g) => g.goodsSlotId == goodsSlotId).toList();
+      goodsSlots = goodsSlots
+          .where((g) => g.goodsSlotId == goodsSlotId)
+          .toList();
     }
 
     return HealthInfoQueryResponse(
@@ -501,10 +526,12 @@ class SiteHealthGrpcService {
       errorNodes: 0,
       criticalNodes: 0,
       totalGoodsSlots: totalGoods,
-      normalGoodsSlots:
-          _goodsSlotHealthData.where((g) => g.healthStatus == HealthStatus.normal).length,
-      warningGoodsSlots:
-          _goodsSlotHealthData.where((g) => g.healthStatus == HealthStatus.warning).length,
+      normalGoodsSlots: _goodsSlotHealthData
+          .where((g) => g.healthStatus == HealthStatus.normal)
+          .length,
+      warningGoodsSlots: _goodsSlotHealthData
+          .where((g) => g.healthStatus == HealthStatus.warning)
+          .length,
       errorGoodsSlots: 0,
       overallHealthScore: totalMarkers > 0 ? normalMarkers / totalMarkers : 1.0,
       perCarExceptionCounts: [],
@@ -539,11 +566,15 @@ class SiteHealthGrpcService {
     int exceptionCount = 0;
 
     if (category == ExceptionCategory.marker) {
-      final markers = _markerHealthData.where((m) => m.nodeId == nodeId).toList();
+      final markers = _markerHealthData
+          .where((m) => m.nodeId == nodeId)
+          .toList();
       affectedCars = markers.map((m) => m.carId).toSet().toList();
       exceptionCount = markers.length;
     } else if (category == ExceptionCategory.ground) {
-      final grounds = _groundHealthData.where((g) => g.carId == nodeId).toList();
+      final grounds = _groundHealthData
+          .where((g) => g.carId == nodeId)
+          .toList();
       affectedCars = grounds.map((g) => g.carId).toSet().toList();
       exceptionCount = grounds.length;
     }
@@ -632,7 +663,9 @@ class SiteHealthGrpcService {
 
     if (category == ExceptionCategory.marker || clearAll) {
       if (nodeId != null) {
-        final toRemove = _markerHealthData.where((m) => m.nodeId == nodeId).length;
+        final toRemove = _markerHealthData
+            .where((m) => m.nodeId == nodeId)
+            .length;
         _markerHealthData.removeWhere((m) => m.nodeId == nodeId);
         count += toRemove;
       } else {
@@ -643,7 +676,9 @@ class SiteHealthGrpcService {
 
     if (category == ExceptionCategory.ground || clearAll) {
       if (nodeId != null) {
-        final toRemove = _groundHealthData.where((g) => g.carId == nodeId).length;
+        final toRemove = _groundHealthData
+            .where((g) => g.carId == nodeId)
+            .length;
         _groundHealthData.removeWhere((g) => g.carId == nodeId);
         count += toRemove;
       } else {
@@ -654,7 +689,9 @@ class SiteHealthGrpcService {
 
     if (category == ExceptionCategory.goodsSlot || clearAll) {
       if (nodeId != null) {
-        final toRemove = _goodsSlotHealthData.where((g) => g.goodsSlotId == nodeId).length;
+        final toRemove = _goodsSlotHealthData
+            .where((g) => g.goodsSlotId == nodeId)
+            .length;
         _goodsSlotHealthData.removeWhere((g) => g.goodsSlotId == nodeId);
         count += toRemove;
       } else {
@@ -677,7 +714,7 @@ class SiteHealthGrpcService {
       HealthStatus.normal,
       HealthStatus.warning,
       HealthStatus.error,
-      HealthStatus.critical
+      HealthStatus.critical,
     ];
 
     return {
@@ -691,20 +728,14 @@ class SiteHealthGrpcService {
     final random = DateTime.now().millisecond % 3;
     final types = ['不平整', '有障碍物', '有坡度'];
 
-    return {
-      'type': types[random],
-      'count': random + 1,
-    };
+    return {'type': types[random], 'count': random + 1};
   }
 
   Map<String, dynamic> _generateRandomGoodsSlotIssue() {
     final random = DateTime.now().millisecond % 3;
     final types = ['高度不匹配', '位置错误', '损坏'];
 
-    return {
-      'type': types[random],
-      'count': random + 1,
-    };
+    return {'type': types[random], 'count': random + 1};
   }
 }
 
@@ -744,5 +775,14 @@ class VehicleStatusData {
       json['location'] as String,
       json['exception'] as String,
     );
+  }
+
+  /// 重置位置健康数据（模拟实现）
+  Future<void> resetLocationHealthData({
+    types.PositionData_t? logicLocation,
+  }) async {
+    // 模拟延迟
+    await Future.delayed(const Duration(milliseconds: 500));
+    print('✓ 模拟重置位置 (${logicLocation?.localX}, ${logicLocation?.localY}) 健康数据');
   }
 }

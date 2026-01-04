@@ -172,6 +172,45 @@ class SiteHealthRealGrpcService {
     }
   }
 
+  // 查询综合健康状态（只返回状态汇总，不含具体检测数据）
+  Future<pb.OverallStatusQueryResponse> queryOverallStatus({
+    Int64? nodeId,
+    types.PositionData_t? logicLocation,
+    Int64? goodsSlotId,
+    pb.HealthStatus? minStatus,
+    DateTime? startTime,
+    DateTime? endTime,
+  }) async {
+    if (!_isConnected) {
+      throw Exception('gRPC 未连接');
+    }
+
+    try {
+      final request = pb.HealthInfoQueryRequest();
+      if (nodeId != null) request.nodeId = nodeId;
+      if (logicLocation != null) request.logicLocation = logicLocation;
+      if (goodsSlotId != null) request.goodsSlotId = goodsSlotId;
+      if (minStatus != null) request.minStatus = minStatus;
+      if (startTime != null) {
+        request.startTime = Timestamp()
+          ..seconds = Int64(startTime.millisecondsSinceEpoch ~/ 1000)
+          ..nanos = (startTime.millisecondsSinceEpoch % 1000) * 1000000;
+      }
+      if (endTime != null) {
+        request.endTime = Timestamp()
+          ..seconds = Int64(endTime.millisecondsSinceEpoch ~/ 1000)
+          ..nanos = (endTime.millisecondsSinceEpoch % 1000) * 1000000;
+      }
+
+      final response = await _stub.queryOverallStatus(request);
+      print('✓ 查询综合状态成功: ${response.markerStatuses.length} 个二维码位置');
+      return response;
+    } catch (e) {
+      print('✗ 查询综合状态失败: $e');
+      rethrow;
+    }
+  }
+
   // ==================== 实时数据流（用于UI更新）====================
 
   /// 获取实时指标流（定时从服务器拉取统计数据）
